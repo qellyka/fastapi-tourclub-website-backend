@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     MAIL_SSL_TLS: bool = False
 
     class Config:
-        env_file = "app/.env"
+        env_file = ".env"
         env_file_encoding = "utf-8"
 
 
