@@ -6,4 +6,6 @@ __all__ = {
 
 from .base import Base
 from .tokens import TokenModel
-from .users import UserModel
+from .hikes import HikeModel
+from .passes import PassModel
+from .users import UserModel, HikeParticipant, ClubParticipant

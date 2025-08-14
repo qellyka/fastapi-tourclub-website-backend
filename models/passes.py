@@ -14,7 +14,6 @@ if TYPE_CHECKING:
 class PassModel(Base):
     __tablename__ = "passes"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text)
     photos: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String), default=[])
@@ -23,5 +22,4 @@ class PassModel(Base):
         "HikeModel",  # <-- строка вместо прямого импорта
         secondary=hike_pass_association,
         back_populates="passes",
-        default=[],
     )

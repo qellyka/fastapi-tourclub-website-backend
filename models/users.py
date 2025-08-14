@@ -1,21 +1,18 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 
-from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, ARRAY, ForeignKey, Integer, Text
+from sqlalchemy import String, ARRAY, ForeignKey, Text
 from sqlalchemy.sql import func
 from sqlalchemy.types import TIMESTAMP
 
 from .base import Base
 
-from typing import TYPE_CHECKING
-
 if TYPE_CHECKING:
     from .hikes import HikeModel
 
 
-class UserModel(AsyncAttrs, Base):
+class UserModel(Base):
     __tablename__ = "users"
 
     username: Mapped[str] = mapped_column(String, unique=True, nullable=False)
@@ -27,17 +24,15 @@ class UserModel(AsyncAttrs, Base):
     is_activated: Mapped[bool] = mapped_column(default=False)
     roles: Mapped[List[str]] = mapped_column(ARRAY(String), default=["guest"])
 
-    hikes_participations: Mapped[Optional[List["HikeParticipant"]]] = relationship(
-        back_populates="user", default=[]
+    hikes_participations: Mapped[List["HikeParticipant"]] = relationship(
+        "HikeParticipant", back_populates="user"
     )
     club_participant: Mapped[Optional["ClubParticipant"]] = relationship(
-        back_populates="user", uselist=False
+        "ClubParticipant", back_populates="user", uselist=False
     )
 
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True),
-        server_default=func.now(),
-        nullable=False,
+        TIMESTAMP(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
@@ -50,20 +45,24 @@ class UserModel(AsyncAttrs, Base):
 class HikeParticipant(Base):
     __tablename__ = "hike_participants"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    hike_id: Mapped[int] = mapped_column(ForeignKey("hikes.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    hike_id: Mapped[int] = mapped_column(ForeignKey("hikes.id"), primary_key=True)
     role: Mapped[str] = mapped_column(String)
 
-    user: Mapped["UserModel"] = relationship(back_populates="hikes_participations")
-    hike: Mapped["HikeModel"] = relationship(back_populates="participants_info")
+    user: Mapped["UserModel"] = relationship(
+        "UserModel", back_populates="hikes_participations"
+    )
+    hike: Mapped["HikeModel"] = relationship(
+        "HikeModel", back_populates="participants_info"
+    )
 
 
 class ClubParticipant(Base):
     __tablename__ = "club_participants"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
     description: Mapped[Optional[str]] = mapped_column(Text)
 
-    user: Mapped["UserModel"] = relationship(back_populates="club_participant")
+    user: Mapped["UserModel"] = relationship(
+        "UserModel", back_populates="club_participant"
+    )

@@ -1,11 +1,8 @@
-from typing import List, Optional
-from sqlalchemy import String, Integer, Text, JSON
+from typing import List, Optional, TYPE_CHECKING
+from sqlalchemy import String, Text, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from .associations import hike_pass_association
 from .base import Base
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .users import HikeParticipant
@@ -15,7 +12,6 @@ if TYPE_CHECKING:
 class HikeModel(Base):
     __tablename__ = "hikes"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
     difficulty: Mapped[str] = mapped_column(String, nullable=False)
     route: Mapped[str] = mapped_column(Text, nullable=False)
@@ -26,12 +22,9 @@ class HikeModel(Base):
     description: Mapped[Optional[str]] = mapped_column(Text)
     photos_archive: Mapped[Optional[str]] = mapped_column(String)
 
-    participants_info: Mapped[Optional[List["HikeParticipant"]]] = relationship(
-        "HikeParticipant", back_populates="hike", default=[]
+    participants_info: Mapped[List["HikeParticipant"]] = relationship(
+        "HikeParticipant", back_populates="hike"
     )
-    passes: Mapped[Optional[List["PassModel"]]] = relationship(
-        "PassModel",
-        secondary=hike_pass_association,
-        back_populates="hikes",
-        default=[],
+    passes: Mapped[List["PassModel"]] = relationship(
+        "PassModel", secondary=hike_pass_association, back_populates="hikes"
     )
