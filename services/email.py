@@ -11,7 +11,7 @@ conf = ConnectionConfig(
     MAIL_STARTTLS=settings.MAIL_STARTTLS,
     MAIL_SSL_TLS=settings.MAIL_SSL_TLS,
     USE_CREDENTIALS=True,
-    TEMPLATE_FOLDER="app/templates/email",
+    TEMPLATE_FOLDER="templates/email",
 )
 
 
