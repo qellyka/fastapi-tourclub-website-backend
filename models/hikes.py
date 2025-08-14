@@ -4,7 +4,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .associations import hike_pass_association
 from .base import Base
-from .passes import PassModel
 from .users import HikeParticipant
 
 
@@ -25,6 +24,9 @@ class HikeModel(Base):
     participants_info: Mapped[Optional[List["HikeParticipant"]]] = relationship(
         back_populates="hike", default=[]
     )
-    passes: Mapped[Optional[List[PassModel]]] = relationship(
-        secondary=hike_pass_association, back_populates="hikes", default=[]
+    passes: Mapped[Optional[List["PassModel"]]] = relationship(
+        "PassModel",  # <-- строка вместо прямого импорта
+        secondary=hike_pass_association,
+        back_populates="hikes",
+        default=[],
     )

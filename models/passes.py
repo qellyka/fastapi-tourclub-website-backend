@@ -1,10 +1,9 @@
 from typing import List, Optional
-from sqlalchemy import Column, String, Integer, Text, ARRAY
+from sqlalchemy import String, Integer, Text, ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .associations import hike_pass_association
 from .base import Base
-from .hikes import HikeModel
 
 
 class PassModel(Base):
@@ -16,5 +15,8 @@ class PassModel(Base):
     photos: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String), default=[])
 
     hikes: Mapped[Optional[List["HikeModel"]]] = relationship(
-        secondary=hike_pass_association, back_populates="passes", default=[]
+        "HikeModel",  # <-- строка вместо прямого импорта
+        secondary=hike_pass_association,
+        back_populates="passes",
+        default=[],
     )
