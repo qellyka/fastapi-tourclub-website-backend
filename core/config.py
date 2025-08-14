@@ -5,6 +5,8 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     # --- App settings ---
     DEBUG: bool = False
+    HOST: str = "0.0.0.0"
+    PORT: int = 8000
 
     # --- Database ---
     DATABASE_URL: str
