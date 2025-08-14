@@ -5,6 +5,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .associations import hike_pass_association
 from .base import Base
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .hikes import HikeModel
+
 
 class PassModel(Base):
     __tablename__ = "passes"

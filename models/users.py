@@ -6,9 +6,13 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, ARRAY, ForeignKey, Integer, Text
 from sqlalchemy.sql import func
 from sqlalchemy.types import TIMESTAMP
-from .hikes import HikeModel
 
 from .base import Base
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .hikes import HikeModel
 
 
 class UserModel(AsyncAttrs, Base):

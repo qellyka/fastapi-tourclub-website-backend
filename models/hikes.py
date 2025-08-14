@@ -4,7 +4,12 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .associations import hike_pass_association
 from .base import Base
-from .users import HikeParticipant
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .users import HikeParticipant
+    from .passes import PassModel
 
 
 class HikeModel(Base):
@@ -22,10 +27,10 @@ class HikeModel(Base):
     photos_archive: Mapped[Optional[str]] = mapped_column(String)
 
     participants_info: Mapped[Optional[List["HikeParticipant"]]] = relationship(
-        back_populates="hike", default=[]
+        "HikeParticipant", back_populates="hike", default=[]
     )
     passes: Mapped[Optional[List["PassModel"]]] = relationship(
-        "PassModel",  # <-- строка вместо прямого импорта
+        "PassModel",
         secondary=hike_pass_association,
         back_populates="hikes",
         default=[],
