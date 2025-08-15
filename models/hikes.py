@@ -22,6 +22,7 @@ class HikeModel(Base):
     region: Mapped[Optional[str]] = mapped_column(String)
     description: Mapped[Optional[str]] = mapped_column(Text)
     photos_archive: Mapped[Optional[str]] = mapped_column(String)
+    report: Mapped[str] = mapped_column(String)
 
     participants_info: Mapped[List["HikeParticipant"]] = relationship(
         "HikeParticipant", back_populates="hike"

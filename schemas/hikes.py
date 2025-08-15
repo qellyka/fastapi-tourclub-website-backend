@@ -1,4 +1,3 @@
-from typing import Any
 from datetime import date
 from pydantic import BaseModel, Field
 
@@ -15,3 +14,4 @@ class HikeBase(BaseModel):
     region: str = Field(..., description="Регион проведения похода")
     description: str = Field(..., description="Описание похода")
     photos_archive: str = Field(..., description="Ссылка на архив с фотографиями")
+    report: str = Field(..., description="Ссылка на отчет в формате pdf")
