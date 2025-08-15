@@ -6,6 +6,7 @@ from typing import List
 from core.security import decode_token
 from crud.users import get_user_by_email_or_username
 from db.session import get_async_session
+import gpxpy
 
 
 async def get_current_user(
@@ -46,57 +47,92 @@ def role_required(roles: List[str]):
     return checker
 
 
-def gpx_to_geojson(gpx_file_path: str) -> dict:
-    with open(gpx_file_path, "r", encoding="utf-8") as f:
-        gpx = gpxpy.parse(f)
+def gpx_to_geojson(file_path: str) -> dict:
+    """
+    Возвращает готовый GeoJSON:
+      - треки как LineString / MultiLineString
+      - отдельные точки (waypoints) как Point
+      - маршруты (routes) как LineString
+    Координаты только [lon, lat] (высоту кладём в properties).
+    """
+    with open(file_path, "r", encoding="utf-8") as gpx_file:
+        gpx = gpxpy.parse(gpx_file)
 
     features = []
 
+    # --- TRACKS ---
     for track in gpx.tracks:
-        for segment in track.segments:
+        segments_coords = []
+        for seg in track.segments:
             coords = [
-                [point.longitude, point.latitude, point.elevation]
-                for point in segment.points
+                [p.longitude, p.latitude]
+                for p in seg.points
+                if p.longitude is not None and p.latitude is not None
             ]
-            features.append(
-                {
-                    "type": "Feature",
-                    "geometry": {"type": "LineString", "coordinates": coords},
-                    "properties": {"name": track.name},
-                }
-            )
+            if len(coords) >= 2:
+                segments_coords.append(coords)
 
-    for waypoint in gpx.waypoints:
+        if not segments_coords:
+            continue
+
+        geometry = (
+            {"type": "LineString", "coordinates": segments_coords[0]}
+            if len(segments_coords) == 1
+            else {"type": "MultiLineString", "coordinates": segments_coords}
+        )
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": geometry,
+                "properties": {
+                    "kind": "track",
+                    "name": track.name,
+                    "number": track.number,
+                },
+            }
+        )
+
+    # --- WAYPOINTS (ночёвки, вершины, точки и т.п.) ---
+    for w in gpx.waypoints:
+        if w.longitude is None or w.latitude is None:
+            continue
         features.append(
             {
                 "type": "Feature",
                 "geometry": {
                     "type": "Point",
-                    "coordinates": [
-                        waypoint.longitude,
-                        waypoint.latitude,
-                        waypoint.elevation,
-                    ],
+                    "coordinates": [w.longitude, w.latitude],
                 },
                 "properties": {
-                    "name": waypoint.name,
-                    "description": waypoint.description,
+                    "kind": "waypoint",
+                    "name": w.name,
+                    "desc": w.description,
+                    "comment": getattr(w, "comment", None),
+                    "symbol": w.symbol,
+                    "elevation": w.elevation,
+                    "time": w.time.isoformat() if getattr(w, "time", None) else None,
                 },
             }
         )
 
-    for route in gpx.routes:
+    # --- ROUTES (если есть в GPX) ---
+    for r in gpx.routes:
         coords = [
-            [point.longitude, point.latitude, point.elevation] for point in route.points
+            [p.longitude, p.latitude]
+            for p in r.points
+            if p.longitude is not None and p.latitude is not None
         ]
-        features.append(
-            {
-                "type": "Feature",
-                "geometry": {"type": "LineString", "coordinates": coords},
-                "properties": {"name": route.name},
-            }
-        )
+        if len(coords) >= 2:
+            features.append(
+                {
+                    "type": "Feature",
+                    "geometry": {"type": "LineString", "coordinates": coords},
+                    "properties": {
+                        "kind": "route",
+                        "name": r.name,
+                        "desc": r.description,
+                    },
+                }
+            )
 
-    geojson = {"type": "FeatureCollection", "features": features}
-
-    return geojson
+    return {"type": "FeatureCollection", "features": features}
