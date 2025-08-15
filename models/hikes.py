@@ -1,5 +1,6 @@
+from datetime import date
 from typing import List, Optional, TYPE_CHECKING
-from sqlalchemy import String, Text, JSON
+from sqlalchemy import String, Text, JSON, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .associations import hike_pass_association
 from .base import Base
@@ -16,8 +17,8 @@ class HikeModel(Base):
     complexity: Mapped[str] = mapped_column(String, nullable=False)
     route: Mapped[str] = mapped_column(Text, nullable=False)
     geojson_data: Mapped[Optional[dict]] = mapped_column(JSON)
-    start_date: Mapped[Optional[str]] = mapped_column(String)
-    end_date: Mapped[Optional[str]] = mapped_column(String)
+    start_date: Mapped[date] = mapped_column(Date, nullable=False)
+    end_date: Mapped[date] = mapped_column(Date, nullable=False)
     region: Mapped[Optional[str]] = mapped_column(String)
     description: Mapped[Optional[str]] = mapped_column(Text)
     photos_archive: Mapped[Optional[str]] = mapped_column(String)
