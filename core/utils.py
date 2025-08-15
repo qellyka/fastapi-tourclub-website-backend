@@ -44,3 +44,59 @@ def role_required(roles: List[str]):
         return user
 
     return checker
+
+
+def gpx_to_geojson(gpx_file_path: str) -> dict:
+    with open(gpx_file_path, "r", encoding="utf-8") as f:
+        gpx = gpxpy.parse(f)
+
+    features = []
+
+    for track in gpx.tracks:
+        for segment in track.segments:
+            coords = [
+                [point.longitude, point.latitude, point.elevation]
+                for point in segment.points
+            ]
+            features.append(
+                {
+                    "type": "Feature",
+                    "geometry": {"type": "LineString", "coordinates": coords},
+                    "properties": {"name": track.name},
+                }
+            )
+
+    for waypoint in gpx.waypoints:
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [
+                        waypoint.longitude,
+                        waypoint.latitude,
+                        waypoint.elevation,
+                    ],
+                },
+                "properties": {
+                    "name": waypoint.name,
+                    "description": waypoint.description,
+                },
+            }
+        )
+
+    for route in gpx.routes:
+        coords = [
+            [point.longitude, point.latitude, point.elevation] for point in route.points
+        ]
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": {"type": "LineString", "coordinates": coords},
+                "properties": {"name": route.name},
+            }
+        )
+
+    geojson = {"type": "FeatureCollection", "features": features}
+
+    return geojson
