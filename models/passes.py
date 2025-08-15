@@ -15,11 +15,14 @@ class PassModel(Base):
     __tablename__ = "passes"
 
     name: Mapped[str] = mapped_column(String, nullable=False)
+    region: Mapped[str] = mapped_column(String, nullable=False)
+    complexity: Mapped[str] = mapped_column(String, nullable=False)
+    height: Mapped[int] = mapped_column(Integer, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text)
     photos: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String), default=[])
 
     hikes: Mapped[Optional[List["HikeModel"]]] = relationship(
-        "HikeModel",  # <-- строка вместо прямого импорта
+        "HikeModel",
         secondary=hike_pass_association,
         back_populates="passes",
     )

@@ -13,7 +13,7 @@ class HikeModel(Base):
     __tablename__ = "hikes"
 
     name: Mapped[str] = mapped_column(String, nullable=False)
-    difficulty: Mapped[str] = mapped_column(String, nullable=False)
+    complexity: Mapped[str] = mapped_column(String, nullable=False)
     route: Mapped[str] = mapped_column(Text, nullable=False)
     geojson_data: Mapped[Optional[dict]] = mapped_column(JSON)
     start_date: Mapped[Optional[str]] = mapped_column(String)
