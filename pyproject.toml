@@ -19,7 +19,8 @@ dependencies = [
     "pydantic[email] (>=2.11.7,<3.0.0)",
     "fastapi[standart] (>=0.116.1,<0.117.0)",
     "uvicorn (>=0.35.0,<0.36.0)",
-    "gpxpy (>=1.6.2,<2.0.0)"
+    "gpxpy (>=1.6.2,<2.0.0)",
+    "python-multipart (>=0.0.20,<0.0.21)"
 ]
 
 
