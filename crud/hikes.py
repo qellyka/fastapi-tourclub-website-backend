@@ -13,12 +13,12 @@ async def get_all_hikes(session: AsyncSession):
     return result.all()
 
 
-async def create_new_hike(session: AsyncSession, hike: HikeBase):
+async def create_new_hike(session: AsyncSession, hike: HikeBase, geojson_data: dict):
     new_hike = HikeModel(
         name=hike.name,
         complexity=hike.complexity,
         route=hike.route,
-        # geojson_data=hike.geojson_data,
+        geojson_data=geojson_data,
         start_date=hike.start_date,
         end_date=hike.end_date,
         region=hike.region,
