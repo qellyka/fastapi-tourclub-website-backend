@@ -2,6 +2,9 @@ __all__ = {
     "TokenModel",
     "UserModel",
     "Base",
+    "HikeModel",
+    "HikeParticipant",
+    "ClubParticipant",
 }
 
 from .base import Base
