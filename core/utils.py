@@ -1,4 +1,6 @@
-from fastapi import Depends, HTTPException, Request, status
+import json
+
+from fastapi import Depends, HTTPException, Request, status, Form
 from jose import JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
@@ -7,6 +9,8 @@ from core.security import decode_token
 from crud.users import get_user_by_email_or_username
 from db.session import get_async_session
 import gpxpy
+
+from schemas import HikeBase, PassBase
 
 
 async def get_current_user(
@@ -136,3 +140,11 @@ def gpx_to_geojson(file_path: str) -> dict:
             )
 
     return {"type": "FeatureCollection", "features": features}
+
+
+def parse_hike_form(hike: str = Form(...)) -> HikeBase:
+    return HikeBase.model_validate(json.loads(hike))
+
+
+def parse_pass_form(pass_stmt: str = Form(...)) -> PassBase:
+    return PassBase.model_validate(json.loads(pass_stmt))
