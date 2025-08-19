@@ -1,5 +1,7 @@
 from datetime import date
-from pydantic import BaseModel, Field
+from typing import Any
+
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class HikeBase(BaseModel):
@@ -15,3 +17,11 @@ class HikeBase(BaseModel):
     description: str = Field(..., description="Описание похода")
     photos_archive: str = Field(..., description="Ссылка на архив с фотографиями")
     report: str = Field(..., description="Ссылка на отчет в формате pdf")
+
+
+class HikeRead(HikeBase):
+    geojson_data: dict[str, Any] = Field(
+        ..., description="Данные маршрута в формате GeoJSON"
+    )
+    id: int
+    model_config = ConfigDict(from_attributes=True)
