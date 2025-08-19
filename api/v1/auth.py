@@ -23,14 +23,14 @@ from crud.tokens import save_token, remove_token, find_token
 from crud.users import get_user_by_email_or_username, create_new_user, activate_user
 from db.session import get_async_session
 from models import UserModel
-from schemas import RegisterUser, UserRead, LoginUser
+from schemas import RegisterUser, UserRead, LoginUser, CreateResponse
 from schemas.users import UserCreateResponse
 from services.email import send_verification_email
 
 router = APIRouter(prefix="/api/auth", tags=["Auth"])
 
 
-@router.post("/register", status_code=HTTP_201_CREATED)
+@router.post("/register", status_code=HTTP_201_CREATED, response_model=CreateResponse)
 async def user_registration(
     user: RegisterUser,
     response: Response,
@@ -73,17 +73,22 @@ async def user_registration(
         samesite="lax",
     )
 
-    return UserCreateResponse(
-        detail={
-            "message": "ok",
+    detail = {
+        "tokens": {
             "access_token": access_token,
             "refresh_token": refresh_token,
         },
-        user=UserRead.model_validate(user),
+        "user": UserRead.model_validate(user),
+    }
+
+    return CreateResponse(
+        status="success",
+        message="ok",
+        detail=detail,
     )
 
 
-@router.post("/login", status_code=HTTP_200_OK)
+@router.post("/login", status_code=HTTP_200_OK, response_model=CreateResponse)
 async def user_login(
     user: LoginUser,
     response: Response,
@@ -119,17 +124,22 @@ async def user_login(
         samesite="lax",
     )
 
-    return UserCreateResponse(
-        detail={
-            "message": "ok",
+    detail = {
+        "tokens": {
             "access_token": access_token,
             "refresh_token": refresh_token,
         },
-        user=UserRead.model_validate(candidate),
+        "user": UserRead.model_validate(candidate),
+    }
+
+    return CreateResponse(
+        status="success",
+        message="ok",
+        detail=detail,
     )
 
 
-@router.post("/logout", status_code=HTTP_200_OK)
+@router.post("/logout", status_code=HTTP_200_OK, response_model=CreateResponse)
 async def user_logout(
     response: Response,
     refresh_token: str | None = Cookie(default=None),
@@ -142,11 +152,10 @@ async def user_logout(
     return {"message": "ok"}
 
 
-@router.get("/refresh")
+@router.get("/refresh", response_model=CreateResponse)
 async def token_refresh(
     response: Response,
     refresh_token: str | None = Cookie(default=None),
-    access_token: str | None = Cookie(default=None),
     session: AsyncSession = Depends(get_async_session),
 ):
     if not refresh_token:
@@ -155,7 +164,7 @@ async def token_refresh(
         )
     payload = decode_token(refresh_token)
 
-    token_data = find_token(refresh_token)
+    token_data = find_token(refresh_token, session)
     if not token_data:
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED, detail="user unauthorized"
@@ -182,17 +191,19 @@ async def token_refresh(
         samesite="lax",
     )
 
-    return UserCreateResponse(
-        detail={
-            "message": "ok",
+    detail = {
+        "tokens": {
             "access_token": access_token,
             "refresh_token": refresh_token,
         },
-        user=UserRead.model_validate(db_user),
+        "user": UserRead.model_validate(db_user),
+    }
+
+    return CreateResponse(
+        status="success",
+        message="ok",
+        detail=detail,
     )
-
-
-from fastapi import HTTPException, status
 
 
 @router.get("/verify")
@@ -208,12 +219,17 @@ async def user_verify(token: str, session: AsyncSession = Depends(get_async_sess
     return RedirectResponse(url="https://ya.ru")
 
 
-@router.get("/profile-test")
+@router.get("/profile-test", response_model=CreateResponse)
 async def read_profile(
     current_user: UserModel = Depends(role_required(["admin"])),
 ):
-    return {
-        "username": current_user.username,
-        "email": current_user.email,
-        "full_name": f"{current_user.first_name} {current_user.last_name}",
-    }
+
+    return CreateResponse(
+        status="success",
+        message="ok",
+        detail={
+            "username": current_user.username,
+            "email": current_user.email,
+            "full_name": f"{current_user.first_name} {current_user.last_name}",
+        },
+    )
