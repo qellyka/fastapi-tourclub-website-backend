@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field, computed_field
+from pydantic import BaseModel, EmailStr, Field, computed_field, ConfigDict
 
 
 class UserBase(BaseModel):
@@ -55,7 +55,7 @@ class RegisterUser(UserBase):
 class UserRead(UserBase):
     id: int
     is_activated: bool
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserUpdate(BaseModel):
