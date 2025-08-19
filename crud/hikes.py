@@ -13,6 +13,11 @@ async def get_all_hikes(session: AsyncSession):
     return result.all()
 
 
+async def get_hike_by_id(session: AsyncSession, id: int):
+    result = await session.scalar(select(HikeModel).where(HikeModel.id == id))
+    return result
+
+
 async def create_new_hike(session: AsyncSession, hike: HikeBase, geojson_data: dict):
     new_hike = HikeModel(
         name=hike.name,
@@ -24,6 +29,7 @@ async def create_new_hike(session: AsyncSession, hike: HikeBase, geojson_data: d
         region=hike.region,
         description=hike.description,
         photos_archive=hike.photos_archive,
+        report=hike.report,
     )
     session.add(new_hike)
     await session.commit()
