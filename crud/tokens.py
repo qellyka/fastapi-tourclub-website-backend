@@ -17,15 +17,19 @@ async def save_token(
         select(TokenModel).where(TokenModel.user_id == user_id)
     )
     if token_data:
-        TokenModel.token = refresh_token
+        token_data.token = refresh_token
         await session.commit()
-    new_token = TokenModel(
-        token=refresh_token,
-        user_id=user_id,
-    )
-    session.add(new_token)
-    await session.commit()
-    return new_token
+        await session.refresh(token_data)
+        return token_data
+    else:
+        new_token = TokenModel(
+            token=refresh_token,
+            user_id=user_id,
+        )
+        session.add(new_token)
+        await session.commit()
+        await session.refresh(new_token)
+        return new_token
 
 
 async def remove_token(
