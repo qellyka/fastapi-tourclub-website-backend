@@ -6,8 +6,6 @@ from sqlalchemy.orm import selectinload
 from models import HikeModel, PassModel, hike_pass_association
 from sqlalchemy import select, or_, insert
 
-from schemas import HikeBase
-
 
 async def create_new_hike_pass_link(
     session: AsyncSession, hike: HikeModel, pas: PassModel
