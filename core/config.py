@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     HOST: str = "0.0.0.0"
     PORT: int = 8000
+    FRONTEND_URL: str = "http://127.0.0.1:3000"
+    BACKEND_URL: str = f"http://127.0.0.1:{PORT}"
 
     # --- Database ---
     DATABASE_URL: str
@@ -17,6 +19,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRES_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRES_DAYS: int = 7
     VERIFY_TOKEN_EXPIRES_HOURS: int = 48
+    COOKIE_SECURE: bool = False
 
     # --- Email settings ---
     MAIL_USERNAME: str
