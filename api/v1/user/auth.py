@@ -10,6 +10,7 @@ from starlette.status import (
     HTTP_403_FORBIDDEN,
 )
 
+from core.config import settings
 from core.security import (
     hash_password,
     create_email_verification_token,
@@ -18,7 +19,7 @@ from core.security import (
     create_access_token,
     create_refresh_token,
 )
-from core.utils import role_required
+from core.utils import role_required, set_auth_cookies
 from crud.tokens import save_token, remove_token, find_token
 from crud.users import get_user_by_email_or_username, create_new_user, activate_user
 from db.session import get_async_session
@@ -50,28 +51,14 @@ async def user_registration(
 
     verify_token = create_email_verification_token(user.username)
     await send_verification_email(
-        user.email, f"http://127.0.0.1:8000/api/auth/verify?token={verify_token}"
+        user.email, f"{settings.BACKEND_URL}/api/auth/verify?token={verify_token}"
     )
 
     access_token = create_access_token(user.username)
     refresh_token = create_refresh_token(user.username)
     await save_token(session, refresh_token, user.id)
-    response.set_cookie(
-        key="access_token",
-        value=access_token,
-        httponly=True,
-        max_age=15 * 60,
-        secure=False,
-        samesite="lax",
-    )
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,
-        max_age=7 * 24 * 60 * 60,
-        secure=False,
-        samesite="lax",
-    )
+
+    set_auth_cookies(response, access_token, refresh_token)
 
     detail = {
         "tokens": {
@@ -107,22 +94,8 @@ async def user_login(
     access_token = create_access_token(candidate.username)
     refresh_token = create_refresh_token(candidate.username)
     await save_token(session, refresh_token, candidate.id)
-    response.set_cookie(
-        key="access_token",
-        value=access_token,
-        httponly=True,
-        max_age=15 * 60,
-        secure=False,
-        samesite="lax",
-    )
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,
-        max_age=7 * 24 * 60 * 60,
-        secure=False,
-        samesite="lax",
-    )
+
+    set_auth_cookies(response, access_token, refresh_token)
 
     detail = {
         "tokens": {
@@ -149,7 +122,11 @@ async def user_logout(
     response.delete_cookie(key="access_token")
     response.delete_cookie(key="refresh_token")
 
-    return {"message": "ok"}
+    return CreateResponse(
+        status="success",
+        message="ok",
+        detail=None,
+    )
 
 
 @router.get("/refresh", response_model=CreateResponse)
@@ -164,7 +141,12 @@ async def token_refresh(
         )
     payload = decode_token(refresh_token)
 
-    token_data = find_token(refresh_token, session)
+    if payload.get("type") != "refresh":
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token type"
+        )
+
+    token_data = await find_token(refresh_token, session)
     if not token_data:
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED, detail="user unauthorized"
@@ -174,22 +156,8 @@ async def token_refresh(
     refresh_token = create_refresh_token(payload["sub"])
     db_user = await get_user_by_email_or_username(session, payload["sub"], None)
     await save_token(session, refresh_token, db_user.id)
-    response.set_cookie(
-        key="access_token",
-        value=access_token,
-        httponly=True,
-        max_age=15 * 60,
-        secure=False,
-        samesite="lax",
-    )
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,
-        max_age=7 * 24 * 60 * 60,
-        secure=False,
-        samesite="lax",
-    )
+
+    set_auth_cookies(response, access_token, refresh_token)
 
     detail = {
         "tokens": {
