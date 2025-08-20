@@ -22,7 +22,7 @@ from core.security import (
 from core.utils import role_required, set_auth_cookies
 from crud.tokens import save_token, remove_token, find_token
 from crud.users import get_user_by_email_or_username, create_new_user, activate_user
-from db.session import get_async_session
+from db import get_async_session
 from models import UserModel
 from schemas import RegisterUser, UserRead, LoginUser, CreateResponse
 from schemas.users import UserCreateResponse
@@ -118,6 +118,12 @@ async def user_logout(
     refresh_token: str | None = Cookie(default=None),
     session: AsyncSession = Depends(get_async_session),
 ):
+
+    if not refresh_token:
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED, detail="user unauthorized"
+        )
+
     await remove_token(refresh_token, session)
     response.delete_cookie(key="access_token")
     response.delete_cookie(key="refresh_token")
