@@ -1,10 +1,11 @@
 import json
 
-from fastapi import Depends, HTTPException, Request, status, Form
+from fastapi import Depends, HTTPException, Request, status, Form, Response
 from jose import JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
+from core.config import settings
 from core.security import decode_token
 from crud.users import get_user_by_email_or_username
 from db.session import get_async_session
@@ -148,3 +149,23 @@ def parse_hike_form(hike: str = Form(...)) -> HikeBase:
 
 def parse_pass_form(pass_stmt: str = Form(...)) -> PassBase:
     return PassBase.model_validate(json.loads(pass_stmt))
+
+
+# В core/utils.py
+def set_auth_cookies(response: Response, access_token: str, refresh_token: str):
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        max_age=settings.ACCESS_TOKEN_EXPIRES_MINUTES * 60,
+        secure=settings.COOKIE_SECURE,
+        samesite="strict" if not settings.DEBUG else "lax",
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        max_age=settings.REFRESH_TOKEN_EXPIRES_DAYS * 24 * 60 * 60,
+        secure=settings.COOKIE_SECURE,
+        samesite="strict" if not settings.DEBUG else "lax",
+    )
