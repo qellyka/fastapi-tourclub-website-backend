@@ -18,7 +18,7 @@ async def create_new_hike_pass_link(
 async def get_pass_hikes(session: AsyncSession, pass_id: int):
     stmt = (
         select(PassModel)
-        .options(selectinload(PassModel.hikes))  # заранее подтягиваем связанные походы
+        .options(selectinload(PassModel.hikes))
         .where(PassModel.id == pass_id)
     )
     pas = await session.scalar(stmt)
