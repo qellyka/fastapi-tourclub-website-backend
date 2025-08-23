@@ -58,32 +58,18 @@ class UserRead(UserBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-class UserUpdate(BaseModel):
-    first_name: str | None = Field(
-        None,
-        min_length=2,
-        max_length=64,
-        pattern=r"^[a-zA-Zа-яА-ЯёЁ-]+$",
-    )
-    last_name: str | None = Field(
-        None,
-        min_length=2,
-        max_length=64,
-        pattern=r"^[a-zA-Zа-яА-ЯёЁ-]+$",
-    )
-    middle_name: str | None = Field(
-        None,
-        min_length=2,
-        max_length=64,
-        pattern=r"^[a-zA-Zа-яА-ЯёЁ-]+$",
-    )
-
-
 class LoginUser(BaseModel):
     username: str
     password: str
 
 
-class UserCreateResponse(BaseModel):
-    detail: dict
-    user: UserRead
+class UserHikeParticipant(UserBase):
+    role: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserClubParticipant(UserBase):
+    description: str
+
+    model_config = ConfigDict(from_attributes=True)
