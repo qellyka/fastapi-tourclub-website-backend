@@ -19,6 +19,11 @@ class HikeBase(BaseModel):
     report: str = Field(..., description="Ссылка на отчет в формате pdf")
 
 
+class HikesRead(HikeBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+
 class HikeRead(HikeBase):
     geojson_data: dict[str, Any] = Field(
         ..., description="Данные маршрута в формате GeoJSON"

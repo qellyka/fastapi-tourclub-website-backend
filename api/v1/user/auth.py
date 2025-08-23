@@ -25,7 +25,6 @@ from crud.users import get_user_by_email_or_username, create_new_user, activate_
 from db import get_async_session
 from models import UserModel
 from schemas import RegisterUser, UserRead, LoginUser, CreateResponse
-from schemas.users import UserCreateResponse
 from services.email import send_verification_email
 
 router = APIRouter(prefix="/api/auth", tags=["Auth"])

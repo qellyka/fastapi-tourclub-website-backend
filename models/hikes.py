@@ -2,12 +2,14 @@ from datetime import date
 from typing import List, Optional, TYPE_CHECKING
 from sqlalchemy import String, Text, JSON, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from .associations import hike_pass_association
 from .base import Base
 
 if TYPE_CHECKING:
-    from .users import HikeParticipant
+    from .users import UserModel
     from .passes import PassModel
+    from .participants import HikeParticipantModel
 
 
 class HikeModel(Base):
@@ -24,9 +26,10 @@ class HikeModel(Base):
     photos_archive: Mapped[Optional[str]] = mapped_column(String)
     report: Mapped[str] = mapped_column(String)
 
-    participants_info: Mapped[List["HikeParticipant"]] = relationship(
-        "HikeParticipant", back_populates="hike"
+    participants: Mapped[List["HikeParticipantModel"]] = relationship(
+        "HikeParticipantModel", back_populates="hike"
     )
+
     passes: Mapped[List["PassModel"]] = relationship(
         "PassModel", secondary=hike_pass_association, back_populates="hikes"
     )

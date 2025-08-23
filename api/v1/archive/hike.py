@@ -1,4 +1,7 @@
 import json
+import tempfile
+import uuid
+from pathlib import Path
 from typing import List
 
 from fastapi import (
@@ -17,12 +20,12 @@ from core.utils import role_required, gpx_to_geojson, parse_hike_form
 from crud.hikes import get_all_hikes, create_new_hike, get_hike_by_id
 from db import get_async_session
 from models import HikeModel, UserModel
-from schemas import HikeBase, CreateResponse, HikeRead
+from schemas import HikeBase, CreateResponse, HikeRead, HikesRead
 
 router = APIRouter(prefix="/api/archive", tags=["Hikes"])
 
 
-@router.get("/hikes", response_model=CreateResponse[List[HikeRead]])
+@router.get("/hikes", response_model=CreateResponse[List[HikesRead]])
 async def get_hikes(
     user: UserModel = Depends(role_required(["guest"])),
     session: AsyncSession = Depends(get_async_session),
@@ -31,7 +34,7 @@ async def get_hikes(
     return CreateResponse(
         status="success",
         message="ok",
-        detail=[HikeRead.model_validate(hike) for hike in hikes],
+        detail=[HikesRead.model_validate(hike) for hike in hikes],
     )
 
 
@@ -57,11 +60,23 @@ async def create_new_hike_report(
     user: UserModel = Depends(role_required(["admin"])),
     session: AsyncSession = Depends(get_async_session),
 ):
-    file = gpx_file.file
-    filename = gpx_file.filename
-    with open(filename, "wb") as f:
-        f.write(file.read())
-    geojson_data = gpx_to_geojson(filename)
+    if not gpx_file.filename.lower().endswith(".gpx"):
+        raise HTTPException(status_code=400, detail="Only GPX files are allowed")
+
+    if gpx_file.size > 10 * 1024 * 1024:  # 10MB
+        raise HTTPException(status_code=400, detail="File too large")
+
+    safe_filename = f"{uuid.uuid4()}.gpx"
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        file_path = Path(temp_dir) / safe_filename
+
+        with open(file_path, "wb") as f:
+            content = await gpx_file.read()
+            f.write(content)
+
+        geojson_data = gpx_to_geojson(str(file_path))
+
     hike.report = report_file.filename
     new_hike = await create_new_hike(session, hike, geojson_data)
     return CreateResponse(

@@ -11,13 +11,18 @@ from schemas import RegisterUser
 async def get_user_by_email_or_username(
     session: AsyncSession,
     username: str,
-    email: str,
+    email: Optional[str],
 ) -> Optional[UserModel]:
     db_user = await session.scalar(
         select(UserModel).where(
             or_(UserModel.username == username, UserModel.email == email)
         )
     )
+    return db_user
+
+
+async def get_user_by_id(session: AsyncSession, user_id: int) -> Optional[UserModel]:
+    db_user = await session.scalar(select(UserModel).where((UserModel.id == user_id)))
     return db_user
 
 

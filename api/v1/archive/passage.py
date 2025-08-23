@@ -7,7 +7,7 @@ from core.utils import role_required, parse_pass_form
 from crud.additional import get_pass_hikes
 from db import get_async_session
 from models import UserModel
-from schemas import CreateResponse, PassBase, PassRead, HikeRead
+from schemas import CreateResponse, PassBase, PassRead, HikesRead
 from crud.passes import get_all_passes, get_pass_by_id, create_new_pass
 
 router = APIRouter(prefix="/archive", tags=["Passes"])
@@ -54,7 +54,7 @@ async def create_new_pass_report(
     )
 
 
-@router.get("/passes/{pass_id}/hikes", response_model=CreateResponse[List[HikeRead]])
+@router.get("/passes/{pass_id}/hikes", response_model=CreateResponse[List[HikesRead]])
 async def get_pass_hikes_reports(
     pass_id: int,
     user: UserModel = Depends(role_required(["guest"])),
@@ -64,5 +64,5 @@ async def get_pass_hikes_reports(
     return CreateResponse(
         status="success",
         message="ok",
-        detail=[HikeRead.model_validate(hike) for hike in hikes],
+        detail=[HikesRead.model_validate(hike) for hike in hikes],
     )
