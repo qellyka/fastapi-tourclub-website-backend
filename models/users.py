@@ -10,6 +10,7 @@ from .base import Base
 
 if TYPE_CHECKING:
     from .hikes import HikeModel
+    from .participants import HikeParticipantModel, ClubParticipantModel
 
 
 class UserModel(Base):
@@ -24,11 +25,11 @@ class UserModel(Base):
     is_activated: Mapped[bool] = mapped_column(default=False)
     roles: Mapped[List[str]] = mapped_column(ARRAY(String), default=["guest"])
 
-    hikes_participations: Mapped[List["HikeParticipant"]] = relationship(
-        "HikeParticipant", back_populates="user"
+    hike_participations: Mapped[List["HikeParticipantModel"]] = relationship(
+        "HikeParticipantModel", back_populates="user"
     )
-    club_participant: Mapped[Optional["ClubParticipant"]] = relationship(
-        "ClubParticipant", back_populates="user", uselist=False
+    club_participations: Mapped[List["ClubParticipantModel"]] = relationship(
+        "ClubParticipantModel", back_populates="user"
     )
 
     created_at: Mapped[datetime] = mapped_column(
@@ -39,30 +40,4 @@ class UserModel(Base):
         onupdate=func.now(),
         server_default=func.now(),
         nullable=False,
-    )
-
-
-class HikeParticipant(Base):
-    __tablename__ = "hike_participants"
-
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
-    hike_id: Mapped[int] = mapped_column(ForeignKey("hikes.id"), primary_key=True)
-    role: Mapped[str] = mapped_column(String)
-
-    user: Mapped["UserModel"] = relationship(
-        "UserModel", back_populates="hikes_participations"
-    )
-    hike: Mapped["HikeModel"] = relationship(
-        "HikeModel", back_populates="participants_info"
-    )
-
-
-class ClubParticipant(Base):
-    __tablename__ = "club_participants"
-
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
-    description: Mapped[Optional[str]] = mapped_column(Text)
-
-    user: Mapped["UserModel"] = relationship(
-        "UserModel", back_populates="club_participant"
     )
