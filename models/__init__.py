@@ -3,8 +3,8 @@ __all__ = {
     "UserModel",
     "Base",
     "HikeModel",
-    "HikeParticipant",
-    "ClubParticipant",
+    "HikeParticipantModel",
+    "ClubParticipantModel",
     "PassModel",
     "hike_pass_association",
 }
@@ -13,5 +13,6 @@ from .base import Base
 from .tokens import TokenModel
 from .hikes import HikeModel
 from .passes import PassModel
-from .users import UserModel, HikeParticipant, ClubParticipant
+from .users import UserModel
+from .participants import HikeParticipantModel, ClubParticipantModel
 from .associations import hike_pass_association
