@@ -24,7 +24,8 @@ class HikeModel(Base):
     region: Mapped[Optional[str]] = mapped_column(String)
     description: Mapped[Optional[str]] = mapped_column(Text)
     photos_archive: Mapped[Optional[str]] = mapped_column(String)
-    report: Mapped[str] = mapped_column(String)
+    report_s3_key: Mapped[str] = mapped_column(String)
+    route_s3_key: Mapped[str] = mapped_column(String)
 
     participants: Mapped[List["HikeParticipantModel"]] = relationship(
         "HikeParticipantModel", back_populates="hike"
