@@ -29,7 +29,8 @@ async def create_new_hike(session: AsyncSession, hike: HikeBase, geojson_data: d
         region=hike.region,
         description=hike.description,
         photos_archive=hike.photos_archive,
-        report=hike.report,
+        report_s3_key=hike.report_s3_key,
+        route_s3_key=hike.route_s3_key,
     )
     session.add(new_hike)
     await session.commit()
