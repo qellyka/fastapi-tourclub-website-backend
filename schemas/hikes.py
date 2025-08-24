@@ -15,8 +15,14 @@ class HikeBase(BaseModel):
     end_date: date = Field(..., description="Дата окончания похода")
     region: str = Field(..., description="Регион проведения похода")
     description: str = Field(..., description="Описание похода")
+
     photos_archive: str = Field(..., description="Ссылка на архив с фотографиями")
-    report: str = Field(..., description="Ссылка на отчет в формате pdf")
+    report_s3_key: str | None = Field(
+        None, description="Ключ для доступа к отчету в S3 хранилище"
+    )
+    route_s3_key: str | None = Field(
+        None, description="Ключ для доступа к маршруту в S3 хранилище"
+    )
 
 
 class HikesRead(HikeBase):
