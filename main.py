@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from api import (
     user_router,
@@ -39,6 +40,15 @@ app.include_router(pass_router)
 app.include_router(additional_router)
 app.include_router(hike_participant_router)
 app.include_router(club_participant_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", reload=True, host=settings.HOST, port=settings.PORT)
