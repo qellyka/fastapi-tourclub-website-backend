@@ -1,8 +1,10 @@
 import json
+import mimetypes
 import tempfile
 import uuid
 from pathlib import Path
 from typing import List
+import io
 
 from fastapi import (
     APIRouter,
@@ -15,12 +17,14 @@ from fastapi import (
     Form,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.responses import StreamingResponse
 
 from core.utils import role_required, gpx_to_geojson, parse_hike_form
 from crud.hikes import get_all_hikes, create_new_hike, get_hike_by_id
 from db import get_async_session
 from models import HikeModel, UserModel
 from schemas import HikeBase, CreateResponse, HikeRead, HikesRead
+from services import s3_client
 
 router = APIRouter(prefix="/api/archive", tags=["Hikes"])
 
@@ -66,18 +70,18 @@ async def create_new_hike_report(
     if gpx_file.size > 10 * 1024 * 1024:  # 10MB
         raise HTTPException(status_code=400, detail="File too large")
 
-    safe_filename = f"{uuid.uuid4()}.gpx"
+    gpx_s3_filename = f"{uuid.uuid4()}.gpx"
+    gpx_bytes = await gpx_file.read()
+    geojson_data = gpx_to_geojson(gpx_bytes)
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        file_path = Path(temp_dir) / safe_filename
+    report_bytes = await report_file.read()
+    report_s3_filename = f"{uuid.uuid4()}.pdf"
 
-        with open(file_path, "wb") as f:
-            content = await gpx_file.read()
-            f.write(content)
+    await s3_client.upload_bytes(gpx_bytes, gpx_s3_filename, "application/gpx+xml")
+    await s3_client.upload_bytes(report_bytes, report_s3_filename, "application/pdf")
 
-        geojson_data = gpx_to_geojson(str(file_path))
-
-    hike.report = report_file.filename
+    hike.report_s3_key = report_s3_filename
+    hike.route_s3_key = gpx_s3_filename
     new_hike = await create_new_hike(session, hike, geojson_data)
     return CreateResponse(
         status="success",
@@ -86,15 +90,23 @@ async def create_new_hike_report(
     )
 
 
-@router.post("/test-upload-file", response_model=CreateResponse)
-async def get_hikes(
-    upl_file: UploadFile,
+@router.get("/hikes/{hike_id}/report")
+async def get_hike_report(
+    hike_id: int,
+    session: AsyncSession = Depends(get_async_session),
+    user: UserModel = Depends(role_required(["guest"])),
 ):
-    file = upl_file.file
-    filename = upl_file.filename
-    with open(filename, "wb") as f:
-        f.write(file.read())
-    return CreateResponse(
-        status="success",
-        message="File uploaded",
+    hike = await get_hike_by_id(session, hike_id)
+    if not hike or not hike.report_s3_key:
+        raise HTTPException(status_code=404, detail="Report not found")
+
+    obj = await s3_client.get_object(hike.report_s3_key)
+    if not obj:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    data, content_type = obj
+    return StreamingResponse(
+        io.BytesIO(data),
+        media_type=content_type,
+        headers={"Content-Disposition": f'inline; filename="{hike.report_s3_key}"'},
     )
