@@ -1,9 +1,10 @@
+import io
 import json
 
 from fastapi import Depends, HTTPException, Request, status, Form, Response
 from jose import JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List
+from typing import List, Union
 
 from core.config import settings
 from core.security import decode_token
@@ -52,20 +53,18 @@ def role_required(roles: List[str]):
     return checker
 
 
-def gpx_to_geojson(file_path: str) -> dict:
-    """
-    Возвращает готовый GeoJSON:
-      - треки как LineString / MultiLineString
-      - отдельные точки (waypoints) как Point
-      - маршруты (routes) как LineString
-    Координаты только [lon, lat] (высоту кладём в properties).
-    """
-    with open(file_path, "r", encoding="utf-8") as gpx_file:
-        gpx = gpxpy.parse(gpx_file)
+def gpx_to_geojson(file_obj: Union[str, io.IOBase]) -> dict:
+    if isinstance(file_obj, str):
+        with open(file_obj, "r", encoding="utf-8") as gpx_file:
+            gpx = gpxpy.parse(gpx_file)
+    else:
+        if isinstance(file_obj, io.BytesIO):
+            file_obj = io.TextIOWrapper(file_obj, encoding="utf-8")
+        gpx = gpxpy.parse(file_obj)
 
     features = []
 
-    # --- TRACKS ---
+    # Tracks
     for track in gpx.tracks:
         segments_coords = []
         for seg in track.segments:
@@ -97,7 +96,7 @@ def gpx_to_geojson(file_path: str) -> dict:
             }
         )
 
-    # --- WAYPOINTS (ночёвки, вершины, точки и т.п.) ---
+    # Waypoints
     for w in gpx.waypoints:
         if w.longitude is None or w.latitude is None:
             continue
@@ -120,7 +119,7 @@ def gpx_to_geojson(file_path: str) -> dict:
             }
         )
 
-    # --- ROUTES (если есть в GPX) ---
+    # Routes
     for r in gpx.routes:
         coords = [
             [p.longitude, p.latitude]
@@ -151,7 +150,6 @@ def parse_pass_form(pass_stmt: str = Form(...)) -> PassBase:
     return PassBase.model_validate(json.loads(pass_stmt))
 
 
-# В core/utils.py
 def set_auth_cookies(response: Response, access_token: str, refresh_token: str):
     response.set_cookie(
         key="access_token",
