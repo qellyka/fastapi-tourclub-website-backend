@@ -1,28 +1,15 @@
-import json
-import mimetypes
-import tempfile
 import uuid
-from pathlib import Path
 from typing import List
 import io
 
-from fastapi import (
-    APIRouter,
-    Depends,
-    HTTPException,
-    Response,
-    Cookie,
-    File,
-    UploadFile,
-    Form,
-)
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import StreamingResponse
 
 from core.utils import role_required, gpx_to_geojson, parse_hike_form
 from crud.hikes import get_all_hikes, create_new_hike, get_hike_by_id
 from db import get_async_session
-from models import HikeModel, UserModel
+from models import UserModel
 from schemas import HikeBase, CreateResponse, HikeRead, HikesRead
 from services import s3_client
 
@@ -90,23 +77,33 @@ async def create_new_hike_report(
     )
 
 
-@router.get("/hikes/{hike_id}/report")
-async def get_hike_report(
+@router.get("/hikes/{hike_id}/file/{file_type}")
+async def get_hike_file(
     hike_id: int,
+    file_type: str = Path(..., regex="^(report|route)$"),
     session: AsyncSession = Depends(get_async_session),
-    user: UserModel = Depends(role_required(["guest"])),
 ):
     hike = await get_hike_by_id(session, hike_id)
-    if not hike or not hike.report_s3_key:
-        raise HTTPException(status_code=404, detail="Report not found")
+    if not hike:
+        raise HTTPException(status_code=404, detail="Hike not found")
 
-    obj = await s3_client.get_object(hike.report_s3_key)
+    key_map = {
+        "report": hike.report_s3_key,
+        "route": hike.route_s3_key,
+    }
+    s3_key = key_map.get(file_type)
+    if not s3_key:
+        raise HTTPException(
+            status_code=404, detail=f"{file_type.capitalize()} file not found"
+        )
+
+    obj = await s3_client.get_object(s3_key)
     if not obj:
-        raise HTTPException(status_code=404, detail="File not found")
+        raise HTTPException(status_code=404, detail="File not found in S3")
 
     data, content_type = obj
     return StreamingResponse(
         io.BytesIO(data),
         media_type=content_type,
-        headers={"Content-Disposition": f'inline; filename="{hike.report_s3_key}"'},
+        headers={"Content-Disposition": f'inline; filename="{s3_key}"'},
     )
