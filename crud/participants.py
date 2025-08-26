@@ -41,11 +41,15 @@ async def get_club_participants(session: AsyncSession):
 
 
 async def create_club_participant(
-    session: AsyncSession, user_id: int, description: str
+    session: AsyncSession,
+    user_id: int,
+    description: str,
+    avatar: str,
 ):
     participant = ClubParticipantModel(
         user_id=user_id,
         description=description,
+        avatar=avatar,
     )
     session.add(participant)
     await session.commit()
