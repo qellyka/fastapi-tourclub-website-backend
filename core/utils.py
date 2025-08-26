@@ -12,7 +12,7 @@ from crud.users import get_user_by_email_or_username
 from db.session import get_async_session
 import gpxpy
 
-from schemas import HikeBase, PassBase
+from schemas import HikeBase, PassBase, HikeParticipantBase, ClubParticipantBase
 
 
 async def get_current_user(
@@ -148,6 +148,10 @@ def parse_hike_form(hike: str = Form(...)) -> HikeBase:
 
 def parse_pass_form(pass_stmt: str = Form(...)) -> PassBase:
     return PassBase.model_validate(json.loads(pass_stmt))
+
+
+def parse_participant_form(participant: str = Form(...)) -> ClubParticipantBase:
+    return ClubParticipantBase.model_validate(json.loads(participant))
 
 
 def set_auth_cookies(response: Response, access_token: str, refresh_token: str):
