@@ -21,6 +21,11 @@ async def get_user_by_email_or_username(
     return db_user
 
 
+async def get_users(session: AsyncSession):
+    result = await session.scalars(select(UserModel))
+    return result.all()
+
+
 async def get_user_by_id(session: AsyncSession, user_id: int) -> Optional[UserModel]:
     db_user = await session.scalar(select(UserModel).where((UserModel.id == user_id)))
     return db_user
