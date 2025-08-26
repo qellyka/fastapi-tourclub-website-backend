@@ -39,24 +39,29 @@ async def get_all_hike_participants(
 
 
 @router.post("/participants", response_model=CreateResponse)
-async def create_new_hike_participant(
-    participant: HikeParticipantBase,
+async def create_new_hike_participants(
+    participants: List[HikeParticipantBase],  # теперь список
     user: UserModel = Depends(role_required(["admin"])),
     session: AsyncSession = Depends(get_async_session),
 ):
+    added = []
+    for participant in participants:
+        hike = await get_hike_by_id(session, participant.hike_id)
+        user_obj = await get_user_by_id(session, participant.user_id)
 
-    hike = await get_hike_by_id(session, participant.hike_id)
-    user = await get_user_by_id(session, participant.user_id)
+        if not hike or not user_obj:
+            continue  # можно собирать ошибки отдельно
 
-    if not hike or not user:
-        raise HTTPException(status_code=404, detail="Hike or User not found")
+        await create_hike_participant(
+            session, participant.hike_id, participant.user_id, participant.role
+        )
+        added.append(f"Hike {hike.id} -> User {user_obj.id}")
 
-    await create_hike_participant(
-        session, participant.hike_id, participant.user_id, participant.role
-    )
+    if not added:
+        raise HTTPException(status_code=404, detail="No valid participants found")
 
     return CreateResponse(
         status="success",
-        message=f"Связь добавлена: Hike {hike.id} -> User {user.id}",
-        detail=None,
+        message="Participants added",
+        detail=added,
     )
