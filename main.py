@@ -11,6 +11,7 @@ from api import (
     additional_router,
     hike_participant_router,
     club_participant_router,
+    auth_router,
 )
 from core.config import settings
 from db import db_helper
@@ -34,12 +35,13 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-app.include_router(user_router)
+app.include_router(auth_router)
 app.include_router(hike_router)
 app.include_router(pass_router)
 app.include_router(additional_router)
 app.include_router(hike_participant_router)
 app.include_router(club_participant_router)
+app.include_router(user_router)
 
 app.add_middleware(
     CORSMiddleware,
