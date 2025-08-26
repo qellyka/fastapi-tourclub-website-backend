@@ -1,10 +1,13 @@
+import uuid
+from pathlib import Path
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from pydantic import model_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.utils import role_required
+from core.config import settings
+from core.utils import role_required, parse_participant_form
 from crud import get_user_by_email_or_username
 from crud.hikes import get_hike_by_id
 from crud.participants import (
@@ -19,8 +22,18 @@ from models import UserModel
 from schemas import ClubParticipantBase, CreateResponse, UserRead
 from schemas.participants import ClubParticipantBase
 from schemas.users import UserClubParticipant
+from services import s3_client
 
 router = APIRouter(prefix="/club", tags=["Club"])
+
+
+content_type_map = {
+    "jpg": "image/jpeg",
+    "jpeg": "image/jpeg",
+    "png": "image/png",
+    "gif": "image/gif",
+    "webp": "image/webp",
+}
 
 
 @router.get(
@@ -47,7 +60,8 @@ async def get_all_hike_participants(
 
 @router.post("/participants", response_model=CreateResponse)
 async def create_new_hike_participant(
-    participant: ClubParticipantBase,
+    avatar: UploadFile,
+    participant: ClubParticipantBase = Depends(parse_participant_form),
     user: UserModel = Depends(role_required(["admin"])),
     session: AsyncSession = Depends(get_async_session),
 ):
@@ -56,7 +70,23 @@ async def create_new_hike_participant(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    await create_club_participant(session, participant.user_id, participant.description)
+    extension = Path(avatar.filename).suffix.lstrip(".")
+
+    avatar_s3_filename = f"{uuid.uuid4()}.{extension}"
+    avatar_bytes = await avatar.read()
+    content_type = content_type_map.get(extension, "application/octet-stream")
+
+    avatar_key = await s3_client.upload_bytes(
+        avatar_bytes,
+        avatar_s3_filename,
+        content_type,
+        settings.S3_USER_MEDIA_BUCKET_NAME,
+    )
+    avatar_s3_url = s3_client.object_url(avatar_key)
+
+    await create_club_participant(
+        session, participant.user_id, participant.description, avatar=avatar_s3_url
+    )
 
     return CreateResponse(
         status="success",
