@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import StreamingResponse
 
+from core.config import settings
 from core.utils import role_required, gpx_to_geojson, parse_hike_form
 from crud.hikes import get_all_hikes, create_new_hike, get_hike_by_id
 from db import get_async_session
@@ -64,8 +65,18 @@ async def create_new_hike_report(
     report_bytes = await report_file.read()
     report_s3_filename = f"{uuid.uuid4()}.pdf"
 
-    await s3_client.upload_bytes(gpx_bytes, gpx_s3_filename, "application/gpx+xml")
-    await s3_client.upload_bytes(report_bytes, report_s3_filename, "application/pdf")
+    await s3_client.upload_bytes(
+        gpx_bytes,
+        gpx_s3_filename,
+        "application/gpx+xml",
+        settings.S3_HIKE_MEDIA_BUCKET_NAME,
+    )
+    await s3_client.upload_bytes(
+        report_bytes,
+        report_s3_filename,
+        "application/pdf",
+        settings.S3_HIKE_MEDIA_BUCKET_NAME,
+    )
 
     hike.report_s3_key = report_s3_filename
     hike.route_s3_key = gpx_s3_filename
@@ -97,7 +108,9 @@ async def get_hike_file(
             status_code=404, detail=f"{file_type.capitalize()} file not found"
         )
 
-    obj = await s3_client.get_object(s3_key)
+    obj = await s3_client.get_object(
+        s3_key, bucket_name=settings.S3_HIKE_MEDIA_BUCKET_NAME
+    )
     if not obj:
         raise HTTPException(status_code=404, detail="File not found in S3")
 
