@@ -12,14 +12,12 @@ class S3Client:
         access_key: str,
         secret_key: str,
         endpoint_url: str,
-        bucket_name: str,
     ):
         self.config = {
             "aws_access_key_id": access_key,
             "aws_secret_access_key": secret_key,
             "endpoint_url": endpoint_url,
         }
-        self.bucket_name = bucket_name
         self.session = get_session()
 
     @asynccontextmanager
@@ -34,6 +32,7 @@ class S3Client:
         data: bytes,
         key: str,
         content_type: str,
+        bucket_name: str,
         acl: Optional[str] = None,
     ) -> str:
         extra = {}
@@ -41,7 +40,7 @@ class S3Client:
             extra["ACL"] = acl
         async with self.get_client() as client:
             await client.put_object(
-                Bucket=self.bucket_name,
+                Bucket=bucket_name,
                 Key=key,
                 Body=data,
                 ContentType=content_type,
@@ -49,10 +48,14 @@ class S3Client:
             )
         return key
 
-    async def get_object(self, key: str) -> Optional[tuple[bytes, str]]:
+    async def get_object(
+        self,
+        key: str,
+        bucket_name: str,
+    ) -> Optional[tuple[bytes, str]]:
         async with self.get_client() as client:
             try:
-                response = await client.get_object(Bucket=self.bucket_name, Key=key)
+                response = await client.get_object(Bucket=bucket_name, Key=key)
                 data = await response["Body"].read()
                 content_type = response.get("ContentType", "application/octet-stream")
                 return data, content_type
@@ -60,13 +63,15 @@ class S3Client:
                 return None
 
     def object_url(self, key: str) -> str:
-        return f"{self.config['endpoint_url'].rstrip('/')}/{self.bucket_name}/{key}"
+        return f"{"https://e976a11a-3b9c-4634-b94e-df487727ecee.selstorage.ru".rstrip('/')}/{key}"
 
-    async def presigned_get_url(self, key: str, expires_in: int = 3600) -> str:
+    async def presigned_get_url(
+        self, bucket_name: str, key: str, expires_in: int = 3600
+    ) -> str:
         async with self.get_client() as client:
             return client.generate_presigned_url(
                 "get_object",
-                Params={"Bucket": self.bucket_name, "Key": key},
+                Params={"Bucket": bucket_name, "Key": key},
                 ExpiresIn=expires_in,
             )
 
@@ -75,5 +80,4 @@ s3_client = S3Client(
     access_key=settings.S3_ACCESS_KEY,
     secret_key=settings.S3_SECRET_KEY,
     endpoint_url=settings.S3_ENDPOINT_URL,
-    bucket_name=settings.S3_BUCKET_NAME,
 )
