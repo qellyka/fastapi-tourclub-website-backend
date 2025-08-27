@@ -26,10 +26,16 @@ class UserModel(Base):
     roles: Mapped[List[str]] = mapped_column(ARRAY(String), default=["guest"])
 
     hike_participations: Mapped[List["HikeParticipantModel"]] = relationship(
-        "HikeParticipantModel", back_populates="user"
+        "HikeParticipantModel",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
     club_participations: Mapped[List["ClubParticipantModel"]] = relationship(
-        "ClubParticipantModel", back_populates="user"
+        "ClubParticipantModel",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
     created_at: Mapped[datetime] = mapped_column(

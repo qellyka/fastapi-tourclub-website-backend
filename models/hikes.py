@@ -28,9 +28,16 @@ class HikeModel(Base):
     route_s3_key: Mapped[str] = mapped_column(String)
 
     participants: Mapped[List["HikeParticipantModel"]] = relationship(
-        "HikeParticipantModel", back_populates="hike"
+        "HikeParticipantModel",
+        back_populates="hike",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
     passes: Mapped[List["PassModel"]] = relationship(
-        "PassModel", secondary=hike_pass_association, back_populates="hikes"
+        "PassModel",
+        secondary=hike_pass_association,
+        back_populates="hikes",
+        cascade="all",
+        passive_deletes=True,
     )

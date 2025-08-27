@@ -25,4 +25,6 @@ class PassModel(Base):
         "HikeModel",
         secondary=hike_pass_association,
         back_populates="passes",
+        cascade="all",
+        passive_deletes=True,
     )

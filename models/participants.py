@@ -15,8 +15,12 @@ class HikeParticipantModel(Base):
     __tablename__ = "hike_participants"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
-    hike_id: Mapped[int] = mapped_column(ForeignKey("hikes.id"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    hike_id: Mapped[int] = mapped_column(
+        ForeignKey("hikes.id", ondelete="CASCADE"), primary_key=True
+    )
     role: Mapped[str] = mapped_column(String)
 
     user: Mapped["UserModel"] = relationship(
@@ -35,7 +39,9 @@ class ClubParticipantModel(Base):
     __tablename__ = "club_participants"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
     avatar: Mapped[str]
     description: Mapped[Optional[str]] = mapped_column(Text)
 
