@@ -6,6 +6,7 @@ conf = ConnectionConfig(
     MAIL_USERNAME=settings.MAIL_USERNAME,
     MAIL_PASSWORD=settings.MAIL_PASSWORD,
     MAIL_FROM=settings.MAIL_FROM,
+    MAIL_FROM_NAME=settings.MAIL_FROM_NAME,
     MAIL_PORT=settings.MAIL_PORT,
     MAIL_SERVER=settings.MAIL_SERVER,
     MAIL_STARTTLS=settings.MAIL_STARTTLS,
@@ -18,9 +19,9 @@ conf = ConnectionConfig(
 async def send_email(subject: str, recipients: list[str], body: str):
     message = MessageSchema(
         subject=subject,
-        recipients=recipients,  # список email получателей
+        recipients=recipients,
         body=body,
-        subtype="plain",  # "html" если HTML письмо
+        subtype="plain",
     )
     fm = FastMail(conf)
     await fm.send_message(message)
@@ -33,5 +34,5 @@ async def send_verification_email(email: str, verify_link: str):
         template_body={"verify_link": verify_link},
         subtype="html",
     )
-    fm = FastMail(conf)  # conf — твоя ConnectionConfig
-    await fm.send_message(message, template_name="verify_email.html")
+    fm = FastMail(conf)
+    await fm.send_message(message, template_name="verify_email_updated.html")
