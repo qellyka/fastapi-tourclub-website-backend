@@ -1,5 +1,6 @@
 from typing import Optional
 
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models import UserModel
@@ -55,5 +56,16 @@ async def activate_user(session: AsyncSession, username: str):
     if not user:
         return None
     user.is_activated = True
+    await session.commit()
+    return user
+
+
+async def delete_user_by_id(session: AsyncSession, user_id: int):
+    user = await session.scalar(select(UserModel).where(UserModel.id == user_id))
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    await session.delete(user)
     await session.commit()
     return user
