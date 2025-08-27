@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     MAIL_USERNAME: str
     MAIL_PASSWORD: str
     MAIL_FROM: EmailStr
+    MAIL_FROM_NAME: str
     MAIL_PORT: int = 587
     MAIL_SERVER: str
     MAIL_STARTTLS: bool = True
