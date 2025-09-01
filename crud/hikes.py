@@ -1,5 +1,6 @@
 from typing import Optional
 
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models import HikeModel
@@ -36,3 +37,14 @@ async def create_new_hike(session: AsyncSession, hike: HikeBase, geojson_data: d
     await session.commit()
     await session.refresh(new_hike)
     return new_hike
+
+
+async def delete_hike_by_id(session: AsyncSession, hike_id: int):
+    user = await session.scalar(select(HikeModel).where(HikeModel.id == hike_id))
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    await session.delete(user)
+    await session.commit()
+    return user
