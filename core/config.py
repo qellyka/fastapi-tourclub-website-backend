@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRES_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRES_DAYS: int = 7
     VERIFY_TOKEN_EXPIRES_HOURS: int = 48
-    COOKIE_SECURE: bool = False
+    COOKIE_SECURE: bool = True
 
     # --- Email settings ---
     MAIL_USERNAME: str
