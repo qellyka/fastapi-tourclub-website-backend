@@ -14,7 +14,7 @@ from models import UserModel
 from schemas import HikeParticipantBase, CreateResponse, UserRead
 from schemas.users import UserHikeParticipant
 
-router = APIRouter(prefix="/archive", tags=["Archive"])
+router = APIRouter(prefix="/api/archive", tags=["Archive"])
 
 
 @router.get(

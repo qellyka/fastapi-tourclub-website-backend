@@ -10,7 +10,7 @@ from models import UserModel
 from schemas import CreateResponse, PassBase, PassRead, HikesRead
 from crud.passes import get_all_passes, get_pass_by_id, create_new_pass
 
-router = APIRouter(prefix="/archive", tags=["Passes"])
+router = APIRouter(prefix="/api/archive", tags=["Passes"])
 
 
 @router.get("/passes", response_model=CreateResponse[List[PassRead]])

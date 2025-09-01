@@ -7,7 +7,7 @@ from crud.passes import get_pass_by_id
 from db import get_async_session
 from schemas import CreateResponse
 
-router = APIRouter(prefix="/archive", tags=["Archive"])
+router = APIRouter(prefix="/api/archive", tags=["Archive"])
 
 
 @router.post("/link", response_model=CreateResponse)

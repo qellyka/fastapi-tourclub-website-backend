@@ -190,19 +190,3 @@ async def user_verify(token: str, session: AsyncSession = Depends(get_async_sess
         raise HTTPException(status_code=404, detail="User not found")
 
     return RedirectResponse(url="https://ya.ru")
-
-
-@router.get("/profile-test", response_model=CreateResponse)
-async def read_profile(
-    current_user: UserModel = Depends(role_required(["admin"])),
-):
-
-    return CreateResponse(
-        status="success",
-        message="ok",
-        detail={
-            "username": current_user.username,
-            "email": current_user.email,
-            "full_name": f"{current_user.first_name} {current_user.last_name}",
-        },
-    )

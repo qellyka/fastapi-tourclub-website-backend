@@ -12,7 +12,7 @@ from schemas import CreateResponse, UserRead
 router = APIRouter(prefix="/api", tags=["User"])
 
 
-@router.get("/users", response_model=CreateResponse[List[UserRead]])
+@router.get("/api/users", response_model=CreateResponse[List[UserRead]])
 async def get_all_users(
     session: AsyncSession = Depends(get_async_session),
     user: UserModel = Depends(role_required(["admin"])),
@@ -45,3 +45,20 @@ async def delete_user(
     user: UserModel = Depends(role_required(["admin"])),
 ):
     deleted_user = await delete_user_by_id(session, user_id)
+
+
+@router.get("/users/me", response_model=CreateResponse)
+async def read_profile(
+    current_user: UserModel = Depends(role_required(["guest"])),
+):
+
+    return CreateResponse(
+        status="success",
+        message="ok",
+        detail={
+            "username": current_user.username,
+            "email": current_user.email,
+            "full_name": f"{current_user.first_name} {current_user.last_name}",
+            "user_id": f"{current_user.id}",
+        },
+    )

@@ -24,7 +24,7 @@ from schemas.participants import ClubParticipantBase
 from schemas.users import UserClubParticipant
 from services import s3_client
 
-router = APIRouter(prefix="/club", tags=["Club"])
+router = APIRouter(prefix="/api/club", tags=["Club"])
 
 
 content_type_map = {
