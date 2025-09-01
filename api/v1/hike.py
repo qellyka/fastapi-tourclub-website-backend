@@ -8,7 +8,7 @@ from starlette.responses import StreamingResponse
 
 from core.config import settings
 from core.utils import role_required, gpx_to_geojson, parse_hike_form
-from crud.hikes import get_all_hikes, create_new_hike, get_hike_by_id
+from crud.hikes import get_all_hikes, create_new_hike, get_hike_by_id, delete_hike_by_id
 from db import get_async_session
 from models import UserModel
 from schemas import HikeBase, CreateResponse, HikeRead, HikesRead
@@ -42,6 +42,14 @@ async def get_hike_id(
         message="ok",
         detail=HikeRead.model_validate(hike),
     )
+
+
+@router.delete("/hikes/{hike_id}", status_code=204)
+async def delete_hike(
+    hike_id: int,
+    session: AsyncSession = Depends(get_async_session),
+):
+    await delete_hike_by_id(session, hike_id)
 
 
 @router.post("/hikes", response_model=CreateResponse[HikeRead])
