@@ -18,7 +18,7 @@ async def get_news_item():
     pass
 
 
-@router.put("/news/{news_id}")
+@router.patch("/news/{news_id}")
 async def update_news_item():
     pass
 
