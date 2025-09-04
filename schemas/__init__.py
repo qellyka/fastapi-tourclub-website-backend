@@ -1,8 +1,6 @@
 __all__ = {
-    "UserUpdate",
     "UserRead",
     "UserBase",
-    "UserCreateResponse",
     "LoginUser",
     "RegisterUser",
     "HikeBase",
@@ -15,6 +13,7 @@ __all__ = {
     "HikeParticipantRead",
     "ClubParticipantBase",
     "ClubParticipantRead",
+    "ArticleBase",
 }
 
 from .hikes import HikeBase, HikeRead, HikesRead
@@ -26,6 +25,7 @@ from .participants import (
 )
 from .passes import PassBase, PassRead
 from .response import CreateResponse
+from .articles import ArticleBase
 from .users import (
     LoginUser,
     UserRead,
