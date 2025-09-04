@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.utils import role_required, parse_pass_form
+from core.utils import role_required, parse_pass_form, generate_slug
 from crud.additional import get_pass_hikes
 from db import get_async_session
 from models import UserModel
@@ -32,21 +32,22 @@ async def get_pass_id(
     user: UserModel = Depends(role_required(["guest"])),
     session: AsyncSession = Depends(get_async_session),
 ):
-    pas = await get_pass_by_id(session, pass_id)
+    pass_stmt = await get_pass_by_id(session, pass_id)
     return CreateResponse(
         status="success",
         message="ok",
-        detail=PassRead.model_validate(pas),
+        detail=PassRead.model_validate(pass_stmt),
     )
 
 
 @router.post("/passes", response_model=CreateResponse[PassRead])
 async def create_new_pass_report(
-    pas: PassBase = Depends(parse_pass_form),
+    pass_stmt: PassBase = Depends(parse_pass_form),
     user: UserModel = Depends(role_required(["admin"])),
     session: AsyncSession = Depends(get_async_session),
 ):
-    new_pass = await create_new_pass(session, pas)
+    pass_stmt.slug = generate_slug(pass_stmt.name)
+    new_pass = await create_new_pass(session, pass_stmt)
     return CreateResponse(
         status="success",
         message="New report of pass was created",
