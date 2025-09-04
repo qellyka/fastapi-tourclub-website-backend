@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import StreamingResponse
 
 from core.config import settings
-from core.utils import role_required, gpx_to_geojson, parse_hike_form
+from core.utils import role_required, gpx_to_geojson, parse_hike_form, generate_slug
 from crud.hikes import get_all_hikes, create_new_hike, get_hike_by_id, delete_hike_by_id
 from db import get_async_session
 from models import UserModel
@@ -86,6 +86,7 @@ async def create_new_hike_report(
         settings.S3_HIKE_MEDIA_BUCKET_NAME,
     )
 
+    hike.slug = generate_slug(hike.name)
     hike.report_s3_key = report_s3_filename
     hike.route_s3_key = gpx_s3_filename
     new_hike = await create_new_hike(session, hike, geojson_data)
