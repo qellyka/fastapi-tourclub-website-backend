@@ -3,6 +3,7 @@ import json
 
 from fastapi import Depends, HTTPException, Request, status, Form, Response
 from jose import JWTError
+from slugify import slugify
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Union
 
@@ -171,3 +172,7 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str):
         secure=settings.COOKIE_SECURE,
         samesite="strict" if not settings.DEBUG else "lax",
     )
+
+
+def generate_slug(title: str):
+    return slugify(title)
