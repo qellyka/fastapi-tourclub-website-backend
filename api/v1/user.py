@@ -38,15 +38,6 @@ async def get_user(
     )
 
 
-@router.delete("/users/{user_id}", status_code=204)
-async def delete_user(
-    user_id: int,
-    session: AsyncSession = Depends(get_async_session),
-    user: UserModel = Depends(role_required(["admin"])),
-):
-    deleted_user = await delete_user_by_id(session, user_id)
-
-
 @router.get("/users/me", response_model=CreateResponse)
 async def read_profile(
     current_user: UserModel = Depends(role_required(["guest"])),
@@ -62,3 +53,21 @@ async def read_profile(
             "user_id": f"{current_user.id}",
         },
     )
+
+
+@router.patch("/users/{user_id}")
+async def delete_user(
+    user_id: int,
+    session: AsyncSession = Depends(get_async_session),
+    user: UserModel = Depends(role_required(["guest"])),
+):
+    pass
+
+
+@router.delete("/users/{user_id}", status_code=204)
+async def delete_user(
+    user_id: int,
+    session: AsyncSession = Depends(get_async_session),
+    user: UserModel = Depends(role_required(["admin"])),
+):
+    deleted_user = await delete_user_by_id(session, user_id)
