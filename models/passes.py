@@ -15,6 +15,7 @@ class PassModel(Base):
     __tablename__ = "passes"
 
     name: Mapped[str] = mapped_column(String, nullable=False)
+    slug: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     region: Mapped[str] = mapped_column(String, nullable=False)
     complexity: Mapped[str] = mapped_column(String, nullable=False)
     height: Mapped[int] = mapped_column(Integer, nullable=False)
