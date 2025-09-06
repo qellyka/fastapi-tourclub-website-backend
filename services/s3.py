@@ -62,8 +62,8 @@ class S3Client:
             except client.exceptions.NoSuchKey:
                 return None
 
-    def object_url(self, key: str) -> str:
-        return f"{"https://e976a11a-3b9c-4634-b94e-df487727ecee.selstorage.ru".rstrip('/')}/{key}"
+    def object_url(self, key: str, bucket_url: str) -> str:
+        return f"{f"https://{bucket_url}.tkirbis30.ru".rstrip('/')}/{key}"
 
     async def presigned_get_url(
         self, bucket_name: str, key: str, expires_in: int = 3600
