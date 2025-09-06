@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import String, TIMESTAMP, func, Text
 from sqlalchemy.dialects.postgresql import JSONB
@@ -13,11 +14,11 @@ class ArticleModel(Base):
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     slug: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
 
-    content_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    content_json: Mapped[Optional[str]] = mapped_column(JSONB)
 
-    content_html: Mapped[str] = mapped_column(Text, nullable=False)
+    content_html: Mapped[Optional[str]] = mapped_column(Text)
 
-    cover_s3_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    cover_s3_url: Mapped[str] = mapped_column(String, nullable=True)
     author: Mapped[str] = mapped_column()
 
     created_at: Mapped[datetime] = mapped_column(
