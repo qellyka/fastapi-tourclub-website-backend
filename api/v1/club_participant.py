@@ -82,7 +82,7 @@ async def create_new_hike_participant(
         content_type,
         settings.S3_USER_MEDIA_BUCKET_NAME,
     )
-    avatar_s3_url = s3_client.object_url(avatar_key)
+    avatar_s3_url = s3_client.object_url(avatar_key, "user-media")
 
     await create_club_participant(
         session, participant.user_id, participant.description, avatar=avatar_s3_url
