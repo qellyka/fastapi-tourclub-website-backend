@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     S3_ENDPOINT_URL: str
     S3_HIKE_MEDIA_BUCKET_NAME: str
     S3_USER_MEDIA_BUCKET_NAME: str
+    S3_ARTICLE_MEDIA_BUCKET_NAME: str
+    S3_NEWS_MEDIA_BUCKET_NAME: str
 
     class Config:
         env_file = ".env"
