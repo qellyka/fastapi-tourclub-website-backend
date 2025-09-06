@@ -17,6 +17,10 @@ __all__ = {
     "ArticleRead",
     "ArticlesRead",
     "ArticleUpdate",
+    "NewsBase",
+    "NewsReadList",
+    "NewsRead",
+    "NewsUpdate",
 }
 
 from .hikes import HikeBase, HikeRead, HikesRead
@@ -29,6 +33,7 @@ from .participants import (
 from .passes import PassBase, PassRead
 from .response import CreateResponse
 from .articles import ArticleBase, ArticleUpdate, ArticleRead, ArticlesRead
+from .news import NewsBase, NewsUpdate, NewsRead, NewsReadList
 from .users import (
     LoginUser,
     UserRead,
