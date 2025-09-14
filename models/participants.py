@@ -53,4 +53,5 @@ class ClubParticipantModel(Base):
     def user_with_description(self):
         u = self.user
         u.description = self.description
+        u.avatar = self.avatar
         return u

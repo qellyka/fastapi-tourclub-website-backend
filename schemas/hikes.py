@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field, ConfigDict
 class HikeBase(BaseModel):
     name: str = Field(..., description="Название похода")
     slug: str | None = Field(
-        ..., description="Уникальный идентификатор статьи для URL."
+        None, description="Уникальный идентификатор статьи для URL."
     )
     complexity: str = Field(..., description="Сложность маршрута")
     route: str = Field(..., description="Маршрут похода")
@@ -29,6 +29,8 @@ class HikesRead(BaseModel):
     id: int
     slug: str = Field(..., description="Уникальный идентификатор статьи для URL.")
     name: str = Field(..., description="Название похода")
+    start_date: date = Field(..., description="Дата начала похода")
+    end_date: date = Field(..., description="Дата окончания похода")
     complexity: str = Field(..., description="Сложность маршрута")
     route: str = Field(..., description="Маршрут похода")
     region: str = Field(..., description="Регион проведения похода")

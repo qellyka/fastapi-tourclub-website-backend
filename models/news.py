@@ -15,7 +15,7 @@ class NewsModel(Base):
     summary: Mapped[str] = mapped_column(String(255), nullable=False)
     slug: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
 
-    content_json: Mapped[Optional[str]] = mapped_column(JSONB)
+    content_json: Mapped[Optional[dict]] = mapped_column(JSONB)
     content_html: Mapped[Optional[str]] = mapped_column(Text)
 
     cover_s3_url: Mapped[str] = mapped_column(String, nullable=True)

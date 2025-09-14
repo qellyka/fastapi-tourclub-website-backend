@@ -35,7 +35,6 @@ router = APIRouter(prefix="/api", tags=["News"])
 
 @router.get("/news", response_model=CreateResponse[List[NewsReadList]])
 async def get_article_items(
-    user: UserModel = Depends(role_required(["guest"])),
     session: AsyncSession = Depends(get_async_session),
 ):
     news_data = await get_news(session)
@@ -49,7 +48,6 @@ async def get_article_items(
 @router.get("/news/{slug}", response_model=CreateResponse[NewsRead])
 async def get_article_item(
     slug: str,
-    user: UserModel = Depends(role_required(["guest"])),
     session: AsyncSession = Depends(get_async_session),
 ):
     news_data = await get_news_by_slug(session, slug)

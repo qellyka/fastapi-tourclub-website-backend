@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any, Dict
 
 from pydantic import BaseModel, Field, ConfigDict
 
@@ -8,7 +8,7 @@ class ArticleBase(BaseModel):
     slug: Optional[str] = Field(
         None, description="Уникальный идентификатор статьи для URL."
     )
-    content_json: Optional[str] = Field(
+    content_json: Optional[Dict[str, Any]] = Field(
         None, description="Контент статьи из Tiptap в формате JSON"
     )
     content_html: Optional[str] = Field(
@@ -23,7 +23,7 @@ class ArticleUpdate(BaseModel):
     slug: Optional[str] = Field(
         None, description="Уникальный идентификатор статьи для URL."
     )
-    content_json: Optional[str] = Field(
+    content_json: Optional[Dict[str, Any]] = Field(
         None, description="Контент статьи из Tiptap в формате JSON"
     )
     content_html: Optional[str] = Field(

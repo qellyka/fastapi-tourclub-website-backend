@@ -42,7 +42,7 @@ async def get_pass_id(
 
 @router.post("/passes", response_model=CreateResponse[PassRead])
 async def create_new_pass_report(
-    pass_stmt: PassBase = Depends(parse_pass_form),
+    pass_stmt: PassBase,
     user: UserModel = Depends(role_required(["admin"])),
     session: AsyncSession = Depends(get_async_session),
 ):

@@ -21,6 +21,7 @@ async def get_pass_by_id(session: AsyncSession, id: int):
 async def create_new_pass(session: AsyncSession, pass_stmt: PassBase):
     new_pass = PassModel(
         name=pass_stmt.name,
+        slug=pass_stmt.slug,
         region=pass_stmt.region,
         complexity=pass_stmt.complexity,
         height=pass_stmt.height,

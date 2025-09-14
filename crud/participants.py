@@ -32,11 +32,9 @@ async def get_hike_participants(session: AsyncSession, hike_id: int):
 
 
 async def get_club_participants(session: AsyncSession):
-    stmt = select(ClubParticipantModel).options(
-        selectinload(ClubParticipantModel.user)  # загружаем пользователя сразу
-    )
+    stmt = select(ClubParticipantModel).options(selectinload(ClubParticipantModel.user))
     result = await session.scalars(stmt)
-    participants = result.all()  # список всех участников
+    participants = result.all()
     return participants
 
 

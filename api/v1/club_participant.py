@@ -41,7 +41,6 @@ content_type_map = {
     response_model=CreateResponse[List[UserClubParticipant]],
 )
 async def get_all_hike_participants(
-    user: UserModel = Depends(role_required(["guest"])),
     session: AsyncSession = Depends(get_async_session),
 ):
     participants = await get_club_participants(session)

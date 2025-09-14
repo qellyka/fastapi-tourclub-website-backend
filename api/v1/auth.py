@@ -53,24 +53,10 @@ async def user_registration(
         user.email, f"{settings.BACKEND_URL}/api/auth/verify?token={verify_token}"
     )
 
-    access_token = create_access_token(user.username)
-    refresh_token = create_refresh_token(user.username)
-    await save_token(session, refresh_token, user.id)
-
-    set_auth_cookies(response, access_token, refresh_token)
-
-    detail = {
-        "tokens": {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-        },
-        "user": UserRead.model_validate(user),
-    }
-
     return CreateResponse(
         status="success",
-        message="ok",
-        detail=detail,
+        message="Verify your email",
+        detail=UserRead.model_validate(user),
     )
 
 
@@ -89,6 +75,8 @@ async def user_login(
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
         )
+    if not candidate.is_activated:
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Verify email")
 
     access_token = create_access_token(candidate.username)
     refresh_token = create_refresh_token(candidate.username)
@@ -180,7 +168,11 @@ async def token_refresh(
 
 
 @router.get("/verify")
-async def user_verify(token: str, session: AsyncSession = Depends(get_async_session)):
+async def user_verify(
+    response: Response,
+    token: str,
+    session: AsyncSession = Depends(get_async_session),
+):
     token_payload = decode_token(token)
     if token_payload["type"] != "verify":
         raise HTTPException(status_code=400, detail="Invalid token type")
@@ -189,4 +181,10 @@ async def user_verify(token: str, session: AsyncSession = Depends(get_async_sess
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    return RedirectResponse(url="https://ya.ru")
+    # access_token = create_access_token(user.username)
+    # refresh_token = create_refresh_token(user.username)
+    # await save_token(session, refresh_token, user.id)
+    #
+    # set_auth_cookies(response, access_token, refresh_token)
+
+    return RedirectResponse(url=f"{settings.BACKEND_URL}/docs")

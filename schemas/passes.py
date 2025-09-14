@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, ConfigDict
 class PassBase(BaseModel):
     name: str = Field(..., description="Название перевала")
     slug: str | None = Field(
-        ..., description="Уникальный идентификатор статьи для URL."
+        None, description="Уникальный идентификатор статьи для URL."
     )
     region: str = Field(..., description="Регион перевала")
     complexity: str = Field(..., description="Сложность прохождения перевала")

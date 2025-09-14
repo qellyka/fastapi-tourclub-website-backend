@@ -12,6 +12,8 @@ from api import (
     hike_participant_router,
     club_participant_router,
     auth_router,
+    article_router,
+    news_router,
 )
 from core.config import settings
 from db import db_helper
@@ -31,21 +33,24 @@ async def lifespan(app: FastAPI):
     async with db_helper.engine.begin() as conn:
         # await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
+    # await db_helper.create_random_user()
     yield
 
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(auth_router)
+app.include_router(user_router)
 app.include_router(hike_router)
 app.include_router(pass_router)
-app.include_router(additional_router)
+app.include_router(article_router)
+app.include_router(news_router)
 app.include_router(hike_participant_router)
 app.include_router(club_participant_router)
-app.include_router(user_router)
+app.include_router(additional_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

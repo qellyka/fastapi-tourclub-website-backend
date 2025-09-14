@@ -45,18 +45,23 @@ async def get_article_items(
     )
 
 
-@router.get("/articles/{slug}", response_model=CreateResponse[ArticleRead])
+@router.get("/articles/{identifier}", response_model=CreateResponse[ArticleRead])
 async def get_article_item(
-    slug: str,
+    identifier: str,
     user: UserModel = Depends(role_required(["guest"])),
     session: AsyncSession = Depends(get_async_session),
 ):
-    article = await get_article_by_slug(session, slug)
+    article = None
+    try:
+        article_id = int(identifier)
+        article = await get_article_by_id(session, article_id)
+    except ValueError:
+        article = await get_article_by_slug(session, identifier)
 
     return CreateResponse(
         status="success",
         message="ok",
-        detail=ArticlesRead.model_validate(article),
+        detail=ArticleRead.model_validate(article, from_attributes=True),
     )
 
 

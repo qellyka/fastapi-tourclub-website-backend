@@ -22,6 +22,7 @@ async def get_hike_by_id(session: AsyncSession, id: int):
 async def create_new_hike(session: AsyncSession, hike: HikeBase, geojson_data: dict):
     new_hike = HikeModel(
         name=hike.name,
+        slug=hike.slug,
         complexity=hike.complexity,
         route=hike.route,
         geojson_data=geojson_data,

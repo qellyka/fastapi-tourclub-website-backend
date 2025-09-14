@@ -71,5 +71,6 @@ class UserHikeParticipant(UserBase):
 
 class UserClubParticipant(UserBase):
     description: str
+    avatar: str
 
     model_config = ConfigDict(from_attributes=True)

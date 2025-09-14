@@ -13,8 +13,9 @@ class ArticleModel(Base):
 
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     slug: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    # staus: Mapped[str] =
 
-    content_json: Mapped[Optional[str]] = mapped_column(JSONB)
+    content_json: Mapped[Optional[dict]] = mapped_column(JSONB)
 
     content_html: Mapped[Optional[str]] = mapped_column(Text)
 
