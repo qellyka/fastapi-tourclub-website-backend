@@ -21,6 +21,12 @@ __all__ = {
     "NewsReadList",
     "NewsRead",
     "NewsUpdate",
+    "PassUpdate",
+    "ApplicationOut",
+    "ApplicationStatus",
+    "ApplicationCreate",
+    "ApplicationAdminListItem",
+    "ApplicationUpdateAdmin",
 }
 
 from .hikes import HikeBase, HikeRead, HikesRead
@@ -30,7 +36,7 @@ from .participants import (
     ClubParticipantBase,
     ClubParticipantRead,
 )
-from .passes import PassBase, PassRead
+from .passes import PassBase, PassRead, PassUpdate
 from .response import CreateResponse
 from .articles import ArticleBase, ArticleUpdate, ArticleRead, ArticlesRead
 from .news import NewsBase, NewsUpdate, NewsRead, NewsReadList
@@ -39,4 +45,11 @@ from .users import (
     UserRead,
     RegisterUser,
     UserBase,
+)
+from .applications import (
+    ApplicationStatus,
+    ApplicationCreate,
+    ApplicationOut,
+    ApplicationUpdateAdmin,
+    ApplicationAdminListItem,
 )

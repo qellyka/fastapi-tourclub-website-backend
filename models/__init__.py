@@ -9,6 +9,8 @@ __all__ = {
     "hike_pass_association",
     "ArticleModel",
     "NewsModel",
+    "ApplicationModel",
+    "ApplicationStatus",
 }
 
 from .base import Base
@@ -20,3 +22,4 @@ from .participants import HikeParticipantModel, ClubParticipantModel
 from .associations import hike_pass_association
 from .articles import ArticleModel
 from .news import NewsModel
+from .applications import ApplicationModel, ApplicationStatus
