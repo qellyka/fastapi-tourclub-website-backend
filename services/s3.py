@@ -33,6 +33,7 @@ class S3Client:
         key: str,
         content_type: str,
         bucket_name: str,
+        disposition: str = "inline",
         acl: Optional[str] = None,
     ) -> str:
         extra = {}
@@ -44,7 +45,7 @@ class S3Client:
                 Key=key,
                 Body=data,
                 ContentType=content_type,
-                ContentDisposition="inline",
+                ContentDisposition=disposition,
             )
         return key
 
