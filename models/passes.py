@@ -1,5 +1,5 @@
 from typing import List, Optional
-from sqlalchemy import String, Integer, Text, ARRAY
+from sqlalchemy import String, Integer, Text, ARRAY, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .associations import hike_pass_association
@@ -20,6 +20,8 @@ class PassModel(Base):
     complexity: Mapped[str] = mapped_column(String, nullable=False)
     height: Mapped[int] = mapped_column(Integer, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text)
+    longitude: Mapped[float] = mapped_column(Float, nullable=False)
+    latitude: Mapped[float] = mapped_column(Float, nullable=False)
     photos: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String), default=[])
 
     hikes: Mapped[Optional[List["HikeModel"]]] = relationship(

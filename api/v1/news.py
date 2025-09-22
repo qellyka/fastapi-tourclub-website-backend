@@ -2,7 +2,7 @@ import uuid
 from pathlib import Path
 from typing import List
 
-from fastapi import APIRouter, Depends, UploadFile
+from fastapi import APIRouter, Depends, UploadFile, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
@@ -35,9 +35,11 @@ router = APIRouter(prefix="/api", tags=["News"])
 
 @router.get("/news", response_model=CreateResponse[List[NewsReadList]])
 async def get_article_items(
+    limit: int | None = Query(None, ge=0, le=100, description="Сколько статей вернуть"),
+    offset: int | None = Query(None, ge=0, description="Сколько статей пропустить"),
     session: AsyncSession = Depends(get_async_session),
 ):
-    news_data = await get_news(session)
+    news_data = await get_news(session, limit=limit, offset=offset)
     return CreateResponse(
         status="success",
         message="ok",
@@ -45,17 +47,23 @@ async def get_article_items(
     )
 
 
-@router.get("/news/{slug}", response_model=CreateResponse[NewsRead])
+@router.get("/news/{identifier}", response_model=CreateResponse[NewsRead])
 async def get_article_item(
-    slug: str,
+    identifier: str,
+    user: UserModel = Depends(role_required(["guest"])),
     session: AsyncSession = Depends(get_async_session),
 ):
-    news_data = await get_news_by_slug(session, slug)
+    news = None
+    try:
+        news_id = int(identifier)
+        news = await get_news_by_id(session, news_id)
+    except ValueError:
+        news = await get_news_by_slug(session, identifier)
 
     return CreateResponse(
         status="success",
         message="ok",
-        detail=NewsRead.model_validate(news_data),
+        detail=NewsRead.model_validate(news, from_attributes=True),
     )
 
 

@@ -1,3 +1,5 @@
+from typing import List
+
 from pydantic import BaseModel, EmailStr, Field, computed_field, ConfigDict
 
 
@@ -10,6 +12,14 @@ class UserBase(BaseModel):
         description="Латиница, цифры, _ и -",
     )
     email: EmailStr
+    avatar: str | None = Field(
+        None,
+        description="Ссылка на аватар пользователя",
+    )
+    roles: List[str] = Field(
+        ...,
+        description="Роли пользователя.",
+    )
     first_name: str = Field(
         ...,
         min_length=2,
@@ -71,6 +81,6 @@ class UserHikeParticipant(UserBase):
 
 class UserClubParticipant(UserBase):
     description: str
-    avatar: str
+    avatar_club: str
 
     model_config = ConfigDict(from_attributes=True)

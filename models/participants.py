@@ -42,7 +42,7 @@ class ClubParticipantModel(Base):
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
     )
-    avatar: Mapped[str]
+    avatar_club: Mapped[str]
     description: Mapped[Optional[str]] = mapped_column(Text)
 
     user: Mapped["UserModel"] = relationship(
@@ -53,5 +53,5 @@ class ClubParticipantModel(Base):
     def user_with_description(self):
         u = self.user
         u.description = self.description
-        u.avatar = self.avatar
+        u.avatar_club = self.avatar_club
         return u

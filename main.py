@@ -14,6 +14,8 @@ from api import (
     auth_router,
     article_router,
     news_router,
+    application_router,
+    file_router,
 )
 from core.config import settings
 from db import db_helper
@@ -42,11 +44,13 @@ app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(hike_router)
 app.include_router(pass_router)
+app.include_router(application_router)
 app.include_router(article_router)
 app.include_router(news_router)
 app.include_router(hike_participant_router)
 app.include_router(club_participant_router)
 app.include_router(additional_router)
+app.include_router(file_router)
 
 app.add_middleware(
     CORSMiddleware,

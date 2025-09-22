@@ -47,7 +47,7 @@ async def create_club_participant(
     participant = ClubParticipantModel(
         user_id=user_id,
         description=description,
-        avatar=avatar,
+        avatar_club=avatar,
     )
     session.add(participant)
     await session.commit()

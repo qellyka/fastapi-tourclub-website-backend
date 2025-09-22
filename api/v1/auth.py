@@ -187,4 +187,4 @@ async def user_verify(
     #
     # set_auth_cookies(response, access_token, refresh_token)
 
-    return RedirectResponse(url=f"{settings.BACKEND_URL}/docs")
+    return RedirectResponse(url=f"{settings.FRONTEND_URL}/auth/verified")

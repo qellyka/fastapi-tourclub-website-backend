@@ -38,8 +38,18 @@ async def get_news_by_slug(session: AsyncSession, slug: str):
     return result
 
 
-async def get_news(session: AsyncSession):
-    result = await session.scalars(select(NewsModel))
+async def get_news(session: AsyncSession, limit: int, offset: int = 0):
+    if limit == 0:
+        result = await session.scalars(
+            select(NewsModel).order_by(NewsModel.created_at.desc()).offset(offset)
+        )
+    else:
+        result = await session.scalars(
+            select(NewsModel)
+            .limit(limit)
+            .order_by(NewsModel.created_at.desc())
+            .offset(offset)
+        )
     if not result:
         raise HTTPException(status_code=404, detail="News not found")
     return result.all()

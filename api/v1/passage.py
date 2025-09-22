@@ -3,12 +3,12 @@ from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.utils import role_required, parse_pass_form, generate_slug
+from core.utils import role_required, generate_slug
 from crud.additional import get_pass_hikes
 from db import get_async_session
 from models import UserModel
-from schemas import CreateResponse, PassBase, PassRead, HikesRead
-from crud.passes import get_all_passes, get_pass_by_id, create_new_pass
+from schemas import CreateResponse, PassBase, PassRead, HikesRead, PassUpdate
+from crud.passes import get_all_passes, get_pass_by_id, create_new_pass, update_pass
 
 router = APIRouter(prefix="/api/archive", tags=["Passes"])
 
@@ -66,4 +66,20 @@ async def get_pass_hikes_reports(
         status="success",
         message="ok",
         detail=[HikesRead.model_validate(hike) for hike in hikes],
+    )
+
+
+@router.patch("/passes/{pass_id}", response_model=CreateResponse[PassRead])
+async def update_pass_item(
+    pass_id: int,
+    data: PassUpdate,
+    session: AsyncSession = Depends(get_async_session),
+):
+    db_pass = await get_pass_by_id(session, pass_id)
+    updated_pass = await update_pass(session, db_pass, data)
+
+    return CreateResponse(
+        status="success",
+        message="Pass updated successfully",
+        detail=PassRead.model_validate(updated_pass),
     )

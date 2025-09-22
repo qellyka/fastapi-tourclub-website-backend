@@ -78,12 +78,14 @@ async def create_new_hike_report(
         gpx_s3_filename,
         "application/gpx+xml",
         settings.S3_HIKE_MEDIA_BUCKET_NAME,
+        "attachment",
     )
     await s3_client.upload_bytes(
         report_bytes,
         report_s3_filename,
         "application/pdf",
         settings.S3_HIKE_MEDIA_BUCKET_NAME,
+        "inline",
     )
 
     hike.slug = generate_slug(hike.name)

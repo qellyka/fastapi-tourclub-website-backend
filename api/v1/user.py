@@ -1,13 +1,17 @@
+import os
+import uuid
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.config import settings
 from core.utils import role_required
-from crud.users import get_users, get_user_by_id, delete_user_by_id
+from crud.users import get_users, get_user_by_id, delete_user_by_id, update_user_avatar
 from db import get_async_session
 from models import UserModel
 from schemas import CreateResponse, UserRead
+from services import s3_client
 
 router = APIRouter(prefix="/api", tags=["User"])
 
@@ -26,23 +30,15 @@ async def get_all_users(
     )
 
 
-@router.get("/users/me", response_model=CreateResponse)
+@router.get("/users/me", response_model=CreateResponse[UserRead])
 async def read_profile(
-    current_user: UserModel = Depends(role_required(["guest"])),
+    user: UserModel = Depends(role_required(["guest"])),
+    session: AsyncSession = Depends(get_async_session),
 ):
-
-    detail = {
-        "username": current_user.username,
-        "email": current_user.email,
-        "full_name": f"{current_user.first_name} {current_user.last_name}",
-        "user_id": current_user.id,
-        "roles": current_user.roles,
-    }
-
     return CreateResponse(
         status="success",
         message="ok",
-        detail=detail,
+        detail=UserRead.model_validate(user),
     )
 
 
@@ -65,3 +61,33 @@ async def delete_user(
     user: UserModel = Depends(role_required(["admin"])),
 ):
     deleted_user = await delete_user_by_id(session, user_id)
+
+
+@router.post("/upload/avatar", response_model=CreateResponse[UserRead])
+async def upload_avatar(
+    file: UploadFile = File(...),
+    session: AsyncSession = Depends(get_async_session),
+    user: UserModel = Depends(role_required(["guest"])),
+):
+    ext = os.path.splitext(file.filename)[1].lower()
+    filename = f"avatars/{uuid.uuid4()}{ext}"
+
+    file_bytes = await file.read()
+
+    await s3_client.upload_bytes(
+        file_bytes,
+        filename,
+        file.content_type,
+        settings.S3_USER_MEDIA_BUCKET_NAME,
+        "inline",
+    )
+
+    file_url = s3_client.object_url(filename, "user-media")
+
+    user = await update_user_avatar(session, file_url, user.id)
+
+    return CreateResponse(
+        status="success",
+        message="Аватарка успешно загружена",
+        detail=UserRead.model_validate(user),
+    )

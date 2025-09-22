@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from models import PassModel
 from sqlalchemy import select, or_
 
-from schemas import PassBase
+from schemas import PassBase, PassUpdate
 
 
 async def get_all_passes(session: AsyncSession):
@@ -27,8 +27,22 @@ async def create_new_pass(session: AsyncSession, pass_stmt: PassBase):
         height=pass_stmt.height,
         description=pass_stmt.description,
         photos=pass_stmt.photos,
+        longitude=pass_stmt.longitude,
+        latitude=pass_stmt.latitude,
     )
     session.add(new_pass)
     await session.commit()
     await session.refresh(new_pass)
     return new_pass
+
+
+async def update_pass(
+    session: AsyncSession, db_pass: PassModel, data: PassUpdate
+) -> PassModel:
+    update_data = data.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(db_pass, field, value)
+
+    await session.commit()
+    await session.refresh(db_pass)
+    return db_pass
