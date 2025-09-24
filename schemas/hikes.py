@@ -25,6 +25,19 @@ class HikeBase(BaseModel):
     )
 
 
+class HikeUpdate(BaseModel):
+    name: str | None = Field(None, description="Название похода")
+    complexity: str | None = Field(None, description="Сложность маршрута")
+    route: str | None = Field(None, description="Маршрут похода")
+    start_date: date | None = Field(None, description="Дата начала похода")
+    end_date: date | None = Field(None, description="Дата окончания похода")
+    region: str | None = Field(None, description="Регион проведения похода")
+    description: str | None = Field(None, description="Описание похода")
+    photos_archive: str | None = Field(
+        None, description="Ссылка на архив с фотографиями"
+    )
+
+
 class HikesRead(BaseModel):
     id: int
     slug: str = Field(..., description="Уникальный идентификатор статьи для URL.")

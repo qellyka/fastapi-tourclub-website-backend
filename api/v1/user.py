@@ -7,10 +7,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
 from core.utils import role_required
-from crud.users import get_users, get_user_by_id, delete_user_by_id, update_user_avatar
+from crud.users import (
+    get_users,
+    get_user_by_id,
+    delete_user_by_id,
+    update_user_avatar,
+    update_user,
+)
 from db import get_async_session
 from models import UserModel
-from schemas import CreateResponse, UserRead
+from schemas import CreateResponse, UserRead, UserUpdate
 from services import s3_client
 
 router = APIRouter(prefix="/api", tags=["User"])
@@ -90,4 +96,21 @@ async def upload_avatar(
         status="success",
         message="Аватарка успешно загружена",
         detail=UserRead.model_validate(user),
+    )
+
+
+@router.patch("/users/me/update", response_model=CreateResponse[UserRead])
+async def update_user_item(
+    update_data: UserUpdate,
+    user: UserModel = Depends(role_required(["guest"])),
+    session: AsyncSession = Depends(get_async_session),
+):
+    user_data = await get_user_by_id(session, user.id)
+
+    updated_user_data = await update_user(session, user_data, update_data)
+
+    return CreateResponse(
+        status="succes",
+        message="ok",
+        detail=UserRead.model_validate(updated_user_data),
     )

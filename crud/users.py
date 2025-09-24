@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from models import UserModel
 from sqlalchemy import select, or_
 
-from schemas import RegisterUser
+from schemas import RegisterUser, UserUpdate
 
 
 async def get_user_by_email_or_username(
@@ -84,3 +84,17 @@ async def update_user_avatar(session: AsyncSession, file_url: str, user_id: int)
     await session.commit()
     await session.refresh(user)
     return user
+
+
+async def update_user(
+    session: AsyncSession, user_data: UserModel, update_data: UserUpdate
+):
+
+    update_data = update_data.model_dump(exclude_unset=True)
+
+    for field, value in update_data.items():
+        setattr(user_data, field, value)
+
+    await session.commit()
+    await session.refresh(user_data)
+    return user_data

@@ -16,8 +16,8 @@ class UserBase(BaseModel):
         None,
         description="Ссылка на аватар пользователя",
     )
-    roles: List[str] = Field(
-        ...,
+    roles: List[str] | None = Field(
+        None,
         description="Роли пользователя.",
     )
     first_name: str = Field(
@@ -51,6 +51,30 @@ class UserBase(BaseModel):
             self.middle_name.title() if self.middle_name else "",
         ]
         return " ".join(filter(None, parts))
+
+
+class UserUpdate(BaseModel):
+    first_name: str | None = Field(
+        None,
+        min_length=2,
+        max_length=64,
+        pattern=r"^[a-zA-Zа-яА-ЯёЁ-]+$",
+        description="Имя без цифр и спецсимволов",
+    )
+    last_name: str | None = Field(
+        None,
+        min_length=2,
+        max_length=64,
+        pattern=r"^[a-zA-Zа-яА-ЯёЁ-]+$",
+        description="Фамилия без цифр и спецсимволов",
+    )
+    middle_name: str | None = Field(
+        None,
+        min_length=2,
+        max_length=64,
+        pattern=r"^[a-zA-Zа-яА-ЯёЁ-]+$",
+        description="Отчество без цифр и спецсимволов",
+    )
 
 
 class RegisterUser(UserBase):

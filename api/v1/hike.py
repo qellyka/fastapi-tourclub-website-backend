@@ -2,16 +2,29 @@ import uuid
 from typing import List
 import io
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, Path
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, Path, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import StreamingResponse
 
 from core.config import settings
-from core.utils import role_required, gpx_to_geojson, parse_hike_form, generate_slug
-from crud.hikes import get_all_hikes, create_new_hike, get_hike_by_id, delete_hike_by_id
+from core.utils import (
+    role_required,
+    gpx_to_geojson,
+    parse_hike_form,
+    generate_slug,
+    parse_update_hike_form,
+)
+from crud.hikes import (
+    get_all_hikes,
+    create_new_hike,
+    get_hike_by_id,
+    delete_hike_by_id,
+    get_hike_by_slug,
+    update_hike,
+)
 from db import get_async_session
 from models import UserModel
-from schemas import HikeBase, CreateResponse, HikeRead, HikesRead
+from schemas import HikeBase, CreateResponse, HikeRead, HikesRead, HikeUpdate
 from services import s3_client
 
 router = APIRouter(prefix="/api/archive", tags=["Hikes"])
@@ -30,13 +43,18 @@ async def get_hikes(
     )
 
 
-@router.get("/hikes/{hike_id}", response_model=CreateResponse[HikeRead])
+@router.get("/hikes/{identification}", response_model=CreateResponse[HikeRead])
 async def get_hike_id(
-    hike_id: int,
+    identification: str,
     user: UserModel = Depends(role_required(["guest"])),
     session: AsyncSession = Depends(get_async_session),
 ):
-    hike = await get_hike_by_id(session, hike_id)
+
+    if identification.isdigit():
+        hike = await get_hike_by_id(session, int(identification))
+    else:
+        hike = await get_hike_by_slug(session, identification)
+
     return CreateResponse(
         status="success",
         message="ok",
@@ -48,6 +66,7 @@ async def get_hike_id(
 async def delete_hike(
     hike_id: int,
     session: AsyncSession = Depends(get_async_session),
+    user: UserModel = Depends(role_required(["admin"])),
 ):
     await delete_hike_by_id(session, hike_id)
 
@@ -104,6 +123,7 @@ async def get_hike_file(
     hike_id: int,
     file_type: str = Path(..., regex="^(report|route)$"),
     session: AsyncSession = Depends(get_async_session),
+    user: UserModel = Depends(role_required(["guest"])),
 ):
     hike = await get_hike_by_id(session, hike_id)
     if not hike:
@@ -130,4 +150,64 @@ async def get_hike_file(
         io.BytesIO(data),
         media_type=content_type,
         headers={"Content-Disposition": f'inline; filename="{s3_key}"'},
+    )
+
+
+@router.patch("/hikes/{hike_id}", response_model=CreateResponse[HikesRead])
+async def update_hike_item(
+    hike_id: int,
+    update_data: HikeUpdate = Depends(parse_update_hike_form),
+    report_file: UploadFile | None = File(None),
+    gpx_file: UploadFile | None = File(None),
+    user: UserModel = Depends(role_required(["admin"])),
+    session: AsyncSession = Depends(get_async_session),
+):
+    report_s3_filename = None
+    gpx_s3_filename = None
+    geojson_data = None
+    if report_file:
+        report_bytes = await report_file.read()
+        report_s3_filename = f"{uuid.uuid4()}.pdf"
+
+        await s3_client.upload_bytes(
+            report_bytes,
+            report_s3_filename,
+            "application/pdf",
+            settings.S3_HIKE_MEDIA_BUCKET_NAME,
+            "inline",
+        )
+    if gpx_file:
+        if not gpx_file.filename.lower().endswith(".gpx"):
+            raise HTTPException(status_code=400, detail="Only GPX files are allowed")
+
+        if gpx_file.size > 10 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="File too large")
+
+        gpx_s3_filename = f"{uuid.uuid4()}.gpx"
+        gpx_bytes = await gpx_file.read()
+        geojson_data = gpx_to_geojson(gpx_bytes)
+
+        await s3_client.upload_bytes(
+            gpx_bytes,
+            gpx_s3_filename,
+            "application/gpx+xml",
+            settings.S3_HIKE_MEDIA_BUCKET_NAME,
+            "attachment",
+        )
+
+    hike_data = await get_hike_by_id(session, hike_id)
+
+    updated_hike_data = await update_hike(
+        session,
+        hike_data,
+        update_data,
+        gpx_s3_filename,
+        report_s3_filename,
+        geojson_data,
+    )
+
+    return CreateResponse(
+        status="succes",
+        message="ok",
+        detail=HikeRead.model_validate(updated_hike_data),
     )

@@ -18,6 +18,11 @@ async def get_pass_by_id(session: AsyncSession, id: int):
     return result
 
 
+async def get_pass_by_slug(session: AsyncSession, slug: str):
+    result = await session.scalar(select(PassModel).where(PassModel.slug == slug))
+    return result
+
+
 async def create_new_pass(session: AsyncSession, pass_stmt: PassBase):
     new_pass = PassModel(
         name=pass_stmt.name,

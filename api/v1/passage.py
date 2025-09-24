@@ -8,7 +8,13 @@ from crud.additional import get_pass_hikes
 from db import get_async_session
 from models import UserModel
 from schemas import CreateResponse, PassBase, PassRead, HikesRead, PassUpdate
-from crud.passes import get_all_passes, get_pass_by_id, create_new_pass, update_pass
+from crud.passes import (
+    get_all_passes,
+    get_pass_by_id,
+    create_new_pass,
+    update_pass,
+    get_pass_by_slug,
+)
 
 router = APIRouter(prefix="/api/archive", tags=["Passes"])
 
@@ -26,13 +32,17 @@ async def get_passes(
     )
 
 
-@router.get("/passes/{pass_id}", response_model=CreateResponse[PassRead])
+@router.get("/passes/{identification}", response_model=CreateResponse[PassRead])
 async def get_pass_id(
-    pass_id: int,
+    identification: str,
     user: UserModel = Depends(role_required(["guest"])),
     session: AsyncSession = Depends(get_async_session),
 ):
-    pass_stmt = await get_pass_by_id(session, pass_id)
+    if identification.isdigit():
+        pass_stmt = await get_pass_by_id(session, int(identification))
+    else:
+        pass_stmt = await get_pass_by_slug(session, identification)
+
     return CreateResponse(
         status="success",
         message="ok",

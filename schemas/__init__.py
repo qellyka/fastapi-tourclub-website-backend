@@ -27,9 +27,11 @@ __all__ = {
     "ApplicationCreate",
     "ApplicationAdminListItem",
     "ApplicationUpdateAdmin",
+    "UserUpdate",
+    "HikeUpdate",
 }
 
-from .hikes import HikeBase, HikeRead, HikesRead
+from .hikes import HikeBase, HikeRead, HikesRead, HikeUpdate
 from .participants import (
     HikeParticipantBase,
     HikeParticipantRead,
@@ -45,6 +47,7 @@ from .users import (
     UserRead,
     RegisterUser,
     UserBase,
+    UserUpdate,
 )
 from .applications import (
     ApplicationStatus,

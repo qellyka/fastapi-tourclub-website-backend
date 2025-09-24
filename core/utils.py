@@ -20,6 +20,7 @@ from schemas import (
     ClubParticipantBase,
     ArticleBase,
     NewsBase,
+    HikeUpdate,
 )
 
 
@@ -168,6 +169,10 @@ def parse_article_form(article: str = Form(...)) -> ArticleBase:
 
 def parse_news_form(news: str = Form(...)) -> NewsBase:
     return NewsBase.model_validate(json.loads(news))
+
+
+def parse_update_hike_form(update_data: str = Form(...)) -> HikeUpdate:
+    return HikeUpdate.model_validate(json.loads(update_data))
 
 
 def set_auth_cookies(response: Response, access_token: str, refresh_token: str):
