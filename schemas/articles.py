@@ -31,6 +31,7 @@ class ArticleUpdate(BaseModel):
     )
     cover_s3_url: Optional[str] = Field(None, description="Обложка для статьи")
     author: Optional[str] = Field(None, description="Автор статьи")
+    status: Optional[str] = Field(None)
 
 
 class ArticlesRead(BaseModel):
@@ -39,10 +40,15 @@ class ArticlesRead(BaseModel):
     slug: str
     cover_s3_url: str
     author: str
+    created_by: int
+    updated_by: int
+    status: str
+
     model_config = ConfigDict(from_attributes=True)
 
 
 class ArticleRead(ArticleBase):
     id: int
+    status: str
 
     model_config = ConfigDict(from_attributes=True)

@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.utils import role_required, generate_slug
@@ -21,10 +21,11 @@ router = APIRouter(prefix="/api/archive", tags=["Passes"])
 
 @router.get("/passes", response_model=CreateResponse[List[PassRead]])
 async def get_passes(
+    status: str | None = Query(None),
     session: AsyncSession = Depends(get_async_session),
     user: UserModel = Depends(role_required(["guest"])),
 ):
-    passes = await get_all_passes(session)
+    passes = await get_all_passes(session, status)
     return CreateResponse(
         status="success",
         message="ok",
@@ -53,11 +54,11 @@ async def get_pass_id(
 @router.post("/passes", response_model=CreateResponse[PassRead])
 async def create_new_pass_report(
     pass_stmt: PassBase,
-    user: UserModel = Depends(role_required(["admin"])),
+    user: UserModel = Depends(role_required(["moderator", "admin"])),
     session: AsyncSession = Depends(get_async_session),
 ):
     pass_stmt.slug = generate_slug(pass_stmt.name)
-    new_pass = await create_new_pass(session, pass_stmt)
+    new_pass = await create_new_pass(session, pass_stmt, user.id)
     return CreateResponse(
         status="success",
         message="New report of pass was created",
@@ -84,9 +85,10 @@ async def update_pass_item(
     pass_id: int,
     data: PassUpdate,
     session: AsyncSession = Depends(get_async_session),
+    user: UserModel = Depends(role_required(["moderator", "admin"])),
 ):
     db_pass = await get_pass_by_id(session, pass_id)
-    updated_pass = await update_pass(session, db_pass, data)
+    updated_pass = await update_pass(session, db_pass, data, user.id)
 
     return CreateResponse(
         status="success",

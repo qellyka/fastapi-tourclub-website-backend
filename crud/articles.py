@@ -1,21 +1,22 @@
-from typing import Optional
-
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.utils import generate_slug
+from enums import ItemStatus
 from models import ArticleModel
 from sqlalchemy import select
 
 from schemas import ArticleBase, ArticleUpdate
 
 
-async def create_new_article(session: AsyncSession, article: ArticleBase):
+async def create_new_article(session: AsyncSession, article: ArticleBase, user_id: int):
     new_article = ArticleModel(
         title=article.title,
         slug=article.slug,
         author=article.author,
         cover_s3_url=article.cover_s3_url,
+        created_by=user_id,
+        updated_by=user_id,
     )
 
     session.add(new_article)
@@ -40,15 +41,24 @@ async def get_article_by_slug(session: AsyncSession, slug: str):
     return result
 
 
-async def get_articles(session: AsyncSession):
-    result = await session.scalars(select(ArticleModel))
+async def get_articles(session: AsyncSession, status: ItemStatus):
+    if status:
+        status = ItemStatus(status.upper())
+        result = await session.scalars(
+            select(ArticleModel).where(ArticleModel.status == status)
+        )
+    else:
+        result = await session.scalars(select(ArticleModel))
     if not result:
         raise HTTPException(status_code=404, detail="Articles not found")
     return result.all()
 
 
 async def update_article(
-    session: AsyncSession, article_data: ArticleModel, update_data: ArticleUpdate
+    session: AsyncSession,
+    article_data: ArticleModel,
+    update_data: ArticleUpdate,
+    user_id: int,
 ):
 
     update_data = update_data.model_dump(exclude_unset=True)
@@ -58,6 +68,8 @@ async def update_article(
 
     if "title" in update_data:
         article_data.slug = generate_slug(article_data.title)
+
+    article_data.updated_by = user_id
 
     await session.commit()
     await session.refresh(article_data)

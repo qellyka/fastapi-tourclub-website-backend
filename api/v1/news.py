@@ -35,11 +35,12 @@ router = APIRouter(prefix="/api", tags=["News"])
 
 @router.get("/news", response_model=CreateResponse[List[NewsReadList]])
 async def get_article_items(
+    status: str | None = Query(None),
     limit: int | None = Query(None, ge=0, le=100, description="Сколько статей вернуть"),
     offset: int | None = Query(None, ge=0, description="Сколько статей пропустить"),
     session: AsyncSession = Depends(get_async_session),
 ):
-    news_data = await get_news(session, limit=limit, offset=offset)
+    news_data = await get_news(session, limit=limit, offset=offset, status=status)
     return CreateResponse(
         status="success",
         message="ok",
@@ -71,7 +72,7 @@ async def get_article_item(
 async def create_new_news_item(
     cover_file: UploadFile,
     news: NewsBase = Depends(parse_news_form),
-    user: UserModel = Depends(role_required(["admin"])),
+    user: UserModel = Depends(role_required(["moderator", "admin"])),
     session: AsyncSession = Depends(get_async_session),
 ):
     extension = Path(cover_file.filename).suffix.lstrip(".")
@@ -92,7 +93,7 @@ async def create_new_news_item(
     news.slug = generate_slug(news.title)
     news.cover_s3_url = cover_s3_url
 
-    news = await create_new_news(session, news)
+    news = await create_new_news(session, news, user.id)
 
     return CreateResponse(
         status="succes", message="ok", detail=NewsRead.model_validate(news)
@@ -103,12 +104,12 @@ async def create_new_news_item(
 async def update_news_item(
     news_id: int,
     update_data: NewsUpdate,
-    user: UserModel = Depends(role_required(["admin"])),
+    user: UserModel = Depends(role_required(["moderator", "admin"])),
     session: AsyncSession = Depends(get_async_session),
 ):
     news_data = await get_news_by_id(session, news_id)
 
-    updated_news_data = await update_news(session, news_data, update_data)
+    updated_news_data = await update_news(session, news_data, update_data, user.id)
 
     return CreateResponse(
         status="succes",

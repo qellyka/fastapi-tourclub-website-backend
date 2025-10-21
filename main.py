@@ -54,7 +54,12 @@ app.include_router(file_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://tkirbis30.ru",
+        "https://dev.tkirbis30.ru",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

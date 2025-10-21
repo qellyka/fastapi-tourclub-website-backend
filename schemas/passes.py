@@ -21,6 +21,9 @@ class PassBase(BaseModel):
 
 class PassRead(PassBase):
     id: int
+    created_by: int
+    updated_by: int
+    status: str
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -34,3 +37,4 @@ class PassUpdate(BaseModel):
     description: Optional[str] = None
     photos: Optional[List[str]] = None
     height: Optional[int] = None
+    status: Optional[str] = None

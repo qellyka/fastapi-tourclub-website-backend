@@ -4,18 +4,21 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.utils import generate_slug
+from enums import ItemStatus
 from models import NewsModel
 from sqlalchemy import select
 
 from schemas import NewsBase, NewsUpdate
 
 
-async def create_new_news(session: AsyncSession, news: NewsBase):
+async def create_new_news(session: AsyncSession, news: NewsBase, user_id: int):
     new_news = NewsModel(
         title=news.title,
         slug=news.slug,
         summary=news.summary,
         cover_s3_url=news.cover_s3_url,
+        created_by=user_id,
+        updated_by=user_id,
     )
 
     session.add(new_news)
@@ -38,25 +41,48 @@ async def get_news_by_slug(session: AsyncSession, slug: str):
     return result
 
 
-async def get_news(session: AsyncSession, limit: int, offset: int = 0):
-    if limit == 0:
-        result = await session.scalars(
-            select(NewsModel).order_by(NewsModel.created_at.desc()).offset(offset)
-        )
+async def get_news(
+    session: AsyncSession, status: ItemStatus, limit: int, offset: int = 0
+):
+    if status:
+        status = ItemStatus(status.upper())
+        if limit == 0:
+            result = await session.scalars(
+                select(NewsModel)
+                .where(NewsModel.status == status)
+                .order_by(NewsModel.created_at.desc())
+                .offset(offset)
+            )
+        else:
+            result = await session.scalars(
+                select(NewsModel)
+                .limit(limit)
+                .where(NewsModel.status == status)
+                .order_by(NewsModel.created_at.desc())
+                .offset(offset)
+            )
     else:
-        result = await session.scalars(
-            select(NewsModel)
-            .limit(limit)
-            .order_by(NewsModel.created_at.desc())
-            .offset(offset)
-        )
+        if limit == 0:
+            result = await session.scalars(
+                select(NewsModel).order_by(NewsModel.created_at.desc()).offset(offset)
+            )
+        else:
+            result = await session.scalars(
+                select(NewsModel)
+                .limit(limit)
+                .order_by(NewsModel.created_at.desc())
+                .offset(offset)
+            )
     if not result:
         raise HTTPException(status_code=404, detail="News not found")
     return result.all()
 
 
 async def update_news(
-    session: AsyncSession, news_data: NewsModel, update_data: NewsUpdate
+    session: AsyncSession,
+    news_data: NewsModel,
+    update_data: NewsUpdate,
+    user_id: int,
 ):
 
     update_data = update_data.model_dump(exclude_unset=True)
@@ -66,6 +92,8 @@ async def update_news(
 
     if "title" in update_data:
         news_data.slug = generate_slug(news_data.title)
+
+    news_data.updated_by = user_id
 
     await session.commit()
     await session.refresh(news_data)

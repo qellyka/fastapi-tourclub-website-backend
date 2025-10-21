@@ -2,7 +2,7 @@ import uuid
 from typing import List
 import io
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, Path, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, Path, File, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import StreamingResponse
 
@@ -22,6 +22,7 @@ from crud.hikes import (
     get_hike_by_slug,
     update_hike,
 )
+from crud.users import get_user_by_id
 from db import get_async_session
 from models import UserModel
 from schemas import HikeBase, CreateResponse, HikeRead, HikesRead, HikeUpdate
@@ -32,10 +33,12 @@ router = APIRouter(prefix="/api/archive", tags=["Hikes"])
 
 @router.get("/hikes", response_model=CreateResponse[List[HikesRead]])
 async def get_hikes(
+    status: str | None = Query(None),
     user: UserModel = Depends(role_required(["guest"])),
     session: AsyncSession = Depends(get_async_session),
 ):
-    hikes = await get_all_hikes(session)
+    hikes = await get_all_hikes(session, status)
+
     return CreateResponse(
         status="success",
         message="ok",
@@ -76,7 +79,7 @@ async def create_new_hike_report(
     report_file: UploadFile,
     gpx_file: UploadFile,
     hike: HikeBase = Depends(parse_hike_form),
-    user: UserModel = Depends(role_required(["admin"])),
+    user: UserModel = Depends(role_required(["moderator", "admin"])),
     session: AsyncSession = Depends(get_async_session),
 ):
     if not gpx_file.filename.lower().endswith(".gpx"):
@@ -110,7 +113,7 @@ async def create_new_hike_report(
     hike.slug = generate_slug(hike.name)
     hike.report_s3_key = report_s3_filename
     hike.route_s3_key = gpx_s3_filename
-    new_hike = await create_new_hike(session, hike, geojson_data)
+    new_hike = await create_new_hike(session, hike, geojson_data, user.id)
     return CreateResponse(
         status="success",
         message="New report of hike was created",
@@ -153,13 +156,13 @@ async def get_hike_file(
     )
 
 
-@router.patch("/hikes/{hike_id}", response_model=CreateResponse[HikesRead])
+@router.patch("/hikes/{hike_id}", response_model=CreateResponse[HikeRead])
 async def update_hike_item(
     hike_id: int,
     update_data: HikeUpdate = Depends(parse_update_hike_form),
     report_file: UploadFile | None = File(None),
     gpx_file: UploadFile | None = File(None),
-    user: UserModel = Depends(role_required(["admin"])),
+    user: UserModel = Depends(role_required(["moderator", "admin"])),
     session: AsyncSession = Depends(get_async_session),
 ):
     report_s3_filename = None
@@ -204,6 +207,7 @@ async def update_hike_item(
         gpx_s3_filename,
         report_s3_filename,
         geojson_data,
+        user.id,
     )
 
     return CreateResponse(

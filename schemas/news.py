@@ -31,6 +31,7 @@ class NewsUpdate(BaseModel):
         None, description="Контент новости из Tiptap в формате HTML"
     )
     cover_s3_url: Optional[str] = Field(None, description="Обложка для новости")
+    status: Optional[str] = Field(None, description="Статус публикации")
 
 
 class NewsReadList(BaseModel):
@@ -39,11 +40,15 @@ class NewsReadList(BaseModel):
     summary: str
     slug: str
     cover_s3_url: str
+    status: str
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class NewsRead(NewsBase):
     id: int
+    created_by: int
+    updated_by: int
+    status: str
 
     model_config = ConfigDict(from_attributes=True)

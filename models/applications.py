@@ -22,7 +22,7 @@ class ApplicationModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=False
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
 
     first_name: Mapped[str] = mapped_column(String, nullable=False)

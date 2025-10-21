@@ -1,11 +1,13 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import String, TIMESTAMP, func, Text
+from sqlalchemy import String, TIMESTAMP, func, Text, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from enums import ItemStatus
 from . import Base
+from .users import UserModel
 
 
 class NewsModel(Base):
@@ -19,6 +21,22 @@ class NewsModel(Base):
     content_html: Mapped[Optional[str]] = mapped_column(Text)
 
     cover_s3_url: Mapped[str] = mapped_column(String, nullable=True)
+
+    status: Mapped[ItemStatus] = mapped_column(nullable=False, default=ItemStatus.DRAFT)
+
+    created_by: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    updated_by: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=False
+    )
+
+    created_by_user: Mapped["UserModel"] = relationship(
+        foreign_keys=[created_by], back_populates="created_news"
+    )
+    updated_by_user: Mapped[Optional["UserModel"]] = relationship(
+        foreign_keys=[updated_by], back_populates="updated_news"
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),

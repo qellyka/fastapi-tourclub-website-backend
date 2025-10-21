@@ -2,7 +2,7 @@ import uuid
 from pathlib import Path
 from typing import List
 
-from fastapi import APIRouter, Depends, UploadFile
+from fastapi import APIRouter, Depends, UploadFile, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
@@ -34,10 +34,11 @@ router = APIRouter(prefix="/api", tags=["Article"])
 
 @router.get("/articles", response_model=CreateResponse[List[ArticlesRead]])
 async def get_article_items(
+    status: str | None = Query(None),
     user: UserModel = Depends(role_required(["guest"])),
     session: AsyncSession = Depends(get_async_session),
 ):
-    articles = await get_articles(session)
+    articles = await get_articles(session, status)
     return CreateResponse(
         status="success",
         message="ok",
@@ -69,7 +70,7 @@ async def get_article_item(
 async def create_new_article_item(
     cover_file: UploadFile,
     article: ArticleBase = Depends(parse_article_form),
-    user: UserModel = Depends(role_required(["admin"])),
+    user: UserModel = Depends(role_required(["moderator", "admin"])),
     session: AsyncSession = Depends(get_async_session),
 ):
     extension = Path(cover_file.filename).suffix.lstrip(".")
@@ -90,7 +91,7 @@ async def create_new_article_item(
     article.slug = generate_slug(article.title)
     article.cover_s3_url = cover_s3_url
 
-    article = await create_new_article(session, article)
+    article = await create_new_article(session, article, user.id)
 
     return CreateResponse(
         status="succes", message="ok", detail=ArticleRead.model_validate(article)
@@ -101,12 +102,14 @@ async def create_new_article_item(
 async def update_article_item(
     article_id: int,
     update_data: ArticleUpdate,
-    user: UserModel = Depends(role_required(["admin"])),
+    user: UserModel = Depends(role_required(["moderator", "admin"])),
     session: AsyncSession = Depends(get_async_session),
 ):
     article_data = await get_article_by_id(session, article_id)
 
-    updated_article_data = await update_article(session, article_data, update_data)
+    updated_article_data = await update_article(
+        session, article_data, update_data, user.id
+    )
 
     return CreateResponse(
         status="succes",
