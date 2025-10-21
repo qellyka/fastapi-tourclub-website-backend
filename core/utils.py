@@ -51,12 +51,19 @@ async def get_current_user(
         )
 
 
-def role_required(roles: List[str]):
+def role_required(roles: list[str]):
     async def checker(user=Depends(get_current_user)):
-        if not set(roles).intersection(set(user.roles or [])):
+        user_roles = list(user.roles or [])  # Принудительно приводим к списку
+        # На случай, если это не список, а строка или lazy-объект
+        if not isinstance(user_roles, list):
+            user_roles = [user_roles]
+
+        if not set(roles).intersection(set(user_roles)):
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden"
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Forbidden",
             )
+
         return user
 
     return checker

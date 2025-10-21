@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, EmailStr, Field, computed_field, ConfigDict
 
@@ -41,6 +41,12 @@ class UserBase(BaseModel):
         pattern=r"^[a-zA-Zа-яА-ЯёЁ-]+$",
         description="Отчество без цифр и спецсимволов",
     )
+    description: str | None = Field(
+        None,
+        max_length=200,
+        description="Информация о пользователе",
+    )
+    phone_number: str | None = Field(None, description="Телефон пользователя")
 
     @computed_field(return_type=str)
     @property
@@ -75,6 +81,47 @@ class UserUpdate(BaseModel):
         pattern=r"^[a-zA-Zа-яА-ЯёЁ-]+$",
         description="Отчество без цифр и спецсимволов",
     )
+    description: str | None = Field(
+        None,
+        max_length=200,
+        description="Информация о пользователе",
+    )
+    phone_number: str | None = Field(None, description="Телефон пользователя")
+
+
+class UserAdminUpdate(BaseModel):
+    first_name: str | None = Field(
+        None,
+        min_length=2,
+        max_length=64,
+        pattern=r"^[a-zA-Zа-яА-ЯёЁ-]+$",
+        description="Имя без цифр и спецсимволов",
+    )
+    last_name: str | None = Field(
+        None,
+        min_length=2,
+        max_length=64,
+        pattern=r"^[a-zA-Zа-яА-ЯёЁ-]+$",
+        description="Фамилия без цифр и спецсимволов",
+    )
+    middle_name: str | None = Field(
+        None,
+        min_length=2,
+        max_length=64,
+        pattern=r"^[a-zA-Zа-яА-ЯёЁ-]+$",
+        description="Отчество без цифр и спецсимволов",
+    )
+    description: str | None = Field(
+        None,
+        max_length=200,
+        description="Информация о пользователе",
+    )
+    phone_number: str | None = Field(None, description="Телефон пользователя")
+    roles: List[str] | None = Field(
+        None,
+        description="Роли пользователя.",
+    )
+    email: EmailStr | None = Field(None, description="Почта пользователя")
 
 
 class RegisterUser(UserBase):
@@ -89,6 +136,7 @@ class RegisterUser(UserBase):
 class UserRead(UserBase):
     id: int
     is_activated: bool
+    is_banned: bool
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -106,5 +154,20 @@ class UserHikeParticipant(UserBase):
 class UserClubParticipant(UserBase):
     description: str
     avatar_club: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserHikesRead(BaseModel):
+    hike_id: int
+    role: str
+
+
+class UserHikeParticipantRead(BaseModel):
+    id: int
+    user_id: int
+    hike_id: int
+    role: str
+    hike_name: str
 
     model_config = ConfigDict(from_attributes=True)

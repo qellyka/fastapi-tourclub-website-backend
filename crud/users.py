@@ -2,11 +2,13 @@ from typing import Optional
 
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload, joinedload
 
-from models import UserModel
+from models import UserModel, HikeParticipantModel
 from sqlalchemy import select, or_
 
 from schemas import RegisterUser, UserUpdate
+from schemas.users import UserAdminUpdate
 
 
 async def get_user_by_email_or_username(
@@ -28,7 +30,22 @@ async def get_users(session: AsyncSession):
 
 
 async def get_user_by_id(session: AsyncSession, user_id: int) -> Optional[UserModel]:
-    db_user = await session.scalar(select(UserModel).where((UserModel.id == user_id)))
+    db_user = await session.scalar(
+        select(UserModel)
+        .where((UserModel.id == user_id))
+        .options(selectinload(UserModel.hike_participations))
+    )
+    return db_user
+
+
+async def get_user_by_username(
+    session: AsyncSession, username: str
+) -> Optional[UserModel]:
+    db_user = await session.scalar(
+        select(UserModel)
+        .where((UserModel.username == username))
+        .options(selectinload(UserModel.hike_participations))
+    )
     return db_user
 
 
@@ -95,6 +112,33 @@ async def update_user(
     for field, value in update_data.items():
         setattr(user_data, field, value)
 
+    await session.commit()
+    await session.refresh(user_data)
+    return user_data
+
+
+async def get_user_hike_participations(session: AsyncSession, user_id: int):
+    result = await session.scalars(
+        select(HikeParticipantModel)
+        .options(joinedload(HikeParticipantModel.hike))
+        .where(HikeParticipantModel.user_id == user_id)
+    )
+    return result.all()
+
+
+async def ban_user_by_id(session: AsyncSession, user_id: int):
+    user_data = await session.scalar(select(UserModel).where(UserModel.id == user_id))
+
+    user_data.is_banned = True
+    await session.commit()
+    await session.refresh(user_data)
+    return user_data
+
+
+async def unban_user_by_id(session: AsyncSession, user_id: int):
+    user_data = await session.scalar(select(UserModel).where(UserModel.id == user_id))
+
+    user_data.is_banned = False
     await session.commit()
     await session.refresh(user_data)
     return user_data
