@@ -62,21 +62,18 @@ class UserBase(BaseModel):
 class UserUpdate(BaseModel):
     first_name: str | None = Field(
         None,
-        min_length=2,
         max_length=64,
         pattern=r"^[a-zA-Zа-яА-ЯёЁ-]+$",
         description="Имя без цифр и спецсимволов",
     )
     last_name: str | None = Field(
         None,
-        min_length=2,
         max_length=64,
         pattern=r"^[a-zA-Zа-яА-ЯёЁ-]+$",
         description="Фамилия без цифр и спецсимволов",
     )
     middle_name: str | None = Field(
         None,
-        min_length=2,
         max_length=64,
         pattern=r"^[a-zA-Zа-яА-ЯёЁ-]+$",
         description="Отчество без цифр и спецсимволов",
@@ -92,21 +89,18 @@ class UserUpdate(BaseModel):
 class UserAdminUpdate(BaseModel):
     first_name: str | None = Field(
         None,
-        min_length=2,
         max_length=64,
         pattern=r"^[a-zA-Zа-яА-ЯёЁ-]+$",
         description="Имя без цифр и спецсимволов",
     )
     last_name: str | None = Field(
         None,
-        min_length=2,
         max_length=64,
         pattern=r"^[a-zA-Zа-яА-ЯёЁ-]+$",
         description="Фамилия без цифр и спецсимволов",
     )
     middle_name: str | None = Field(
         None,
-        min_length=2,
         max_length=64,
         pattern=r"^[a-zA-Zа-яА-ЯёЁ-]+$",
         description="Отчество без цифр и спецсимволов",

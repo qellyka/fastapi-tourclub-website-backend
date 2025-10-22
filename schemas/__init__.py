@@ -29,6 +29,7 @@ __all__ = {
     "ApplicationUpdateAdmin",
     "UserUpdate",
     "HikeUpdate",
+    "StatisticsDetail",
 }
 
 from .hikes import HikeBase, HikeRead, HikesRead, HikeUpdate
@@ -39,6 +40,7 @@ from .participants import (
     ClubParticipantRead,
 )
 from .passes import PassBase, PassRead, PassUpdate
+from .statistics import StatisticsDetail
 from .response import CreateResponse
 from .articles import ArticleBase, ArticleUpdate, ArticleRead, ArticlesRead
 from .news import NewsBase, NewsUpdate, NewsRead, NewsReadList

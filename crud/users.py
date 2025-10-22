@@ -117,6 +117,20 @@ async def update_user(
     return user_data
 
 
+async def update_admin_user(
+    session: AsyncSession, user_data: UserModel, update_data: UserAdminUpdate
+):
+
+    update_data = update_data.model_dump(exclude_unset=True)
+
+    for field, value in update_data.items():
+        setattr(user_data, field, value)
+
+    await session.commit()
+    await session.refresh(user_data)
+    return user_data
+
+
 async def get_user_hike_participations(session: AsyncSession, user_id: int):
     result = await session.scalars(
         select(HikeParticipantModel)

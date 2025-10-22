@@ -84,6 +84,7 @@ class HikesRead(BaseModel):
     start_date: date
     end_date: date
     tourism_type: str
+    route: str
     complexity: str
     region: Optional[str]
     leader_fullname: Optional[str]

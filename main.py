@@ -16,6 +16,7 @@ from api import (
     news_router,
     application_router,
     file_router,
+    statistics_router,
 )
 from core.config import settings
 from db import db_helper
@@ -51,6 +52,7 @@ app.include_router(hike_participant_router)
 app.include_router(club_participant_router)
 app.include_router(additional_router)
 app.include_router(file_router)
+app.include_router(statistics_router)
 
 app.add_middleware(
     CORSMiddleware,

@@ -17,6 +17,7 @@ from crud.users import (
     get_user_by_username,
     ban_user_by_id,
     unban_user_by_id,
+    update_admin_user,
 )
 from db import get_async_session
 from models import UserModel
@@ -153,7 +154,7 @@ async def update_user_item(
 ):
     user_data = await get_user_by_id(session, user_id)
 
-    updated_user_data = await update_user(session, user_data, update_data)
+    updated_user_data = await update_admin_user(session, user_data, update_data)
 
     return CreateResponse(
         status="succes",

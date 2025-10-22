@@ -102,6 +102,7 @@ async def admin_update(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Application not found"
         )
+
     return CreateResponse(
         status="success",
         message="Статус заявки обновлён",

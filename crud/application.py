@@ -2,6 +2,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import Optional, List
 
+from sqlalchemy.orm import selectinload
+
 from models import ApplicationModel, ApplicationStatus
 from schemas import ApplicationCreate, ApplicationUpdateAdmin
 
@@ -57,7 +59,9 @@ async def get_application(
     session: AsyncSession, application_id: int
 ) -> Optional[ApplicationModel]:
     result = await session.execute(
-        select(ApplicationModel).where(ApplicationModel.id == application_id)
+        select(ApplicationModel)
+        .where(ApplicationModel.id == application_id)
+        .options(selectinload(ApplicationModel.user))
     )
     return result.scalars().first()
 
