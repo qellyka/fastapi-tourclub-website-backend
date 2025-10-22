@@ -26,11 +26,19 @@ async def get_all_hikes(session: AsyncSession, status: ItemStatus):
 
 
 async def get_hike_by_id(session: AsyncSession, id: int):
-    return await session.scalar(select(HikeModel).where(HikeModel.id == id))
+    return await session.scalar(
+        select(HikeModel)
+        .where(HikeModel.id == id)
+        .options(selectinload(HikeModel.leader))
+    )
 
 
 async def get_hike_by_slug(session: AsyncSession, slug: str):
-    return await session.scalar(select(HikeModel).where(HikeModel.slug == slug))
+    return await session.scalar(
+        select(HikeModel)
+        .where(HikeModel.slug == slug)
+        .options(selectinload(HikeModel.leader))
+    )
 
 
 async def create_new_hike(

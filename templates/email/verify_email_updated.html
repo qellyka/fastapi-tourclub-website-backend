@@ -3,51 +3,117 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Подтверждение Email</title>
+<!--[if mso]>
+<style type="text/css">
+body, table, td {font-family: Arial, sans-serif !important;}
+</style>
+<![endif]-->
 </head>
-<body style="margin:0; padding:0; background-color:#ffffff; font-family: Arial, sans-serif;">
+<body style="margin:0; padding:0; background-color:#f4f4f4; font-family: Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
 
-<table width="100%" cellpadding="0" cellspacing="0" border="0" align="center" bgcolor="#ffffff">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f4f4; padding:20px 0;">
 <tr>
     <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; border-radius:8px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.1);">
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; background-color:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.1);">
 
-            <!-- Шапка с текстом прямо на картинке -->
+            <!-- Шапка с фоновым изображением и градиентом -->
             <tr>
-                <td width="600" height="200" align="center" valign="top"
-                    background="https://system-media.tkirbis30.ru/email.png"
-                    style="background-size:cover; background-position:center; text-align:center; color:white;">
-                    <div style="padding-top:30px; font-size:2.5em; line-height:1.2; font-weight:bold;">
+                <td align="center" valign="top" style="background-color:#174785; background-image:url('https://system-media.tkirbis30.ru/email.png'); background-size:cover; background-position:center; background-repeat:no-repeat; height:200px; padding:50px 20px 0 20px; position:relative;">
+                    <!--[if gte mso 9]>
+                    <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;height:200px;">
+                    <v:fill type="frame" src="https://system-media.tkirbis30.ru/email.png" color="#174785" />
+                    <v:textbox inset="50,0,0,0">
+                    <![endif]-->
+                    <div style="color:#ffffff; font-size:32px; line-height:1.3; font-weight:bold; text-align:center; text-shadow:2px 2px 4px rgba(0,0,0,0.3);">
                         Подтвердите вашу почту
                     </div>
+                    <!--[if gte mso 9]>
+                    </v:textbox>
+                    </v:rect>
+                    <![endif]-->
+                    <!-- Градиент поверх изображения -->
+                    <div style="position:absolute; bottom:0; left:0; right:0; height:5px; background:linear-gradient(to bottom, rgba(23,71,133,0) 0%, rgba(23,71,133,1) 100%);"></div>
                 </td>
             </tr>
 
-            <!-- Основной блок -->
+            <!-- Основной контент -->
             <tr>
-                <td bgcolor="#174785" style="padding:30px 20px; text-align:center; color:white;">
-                    <p style="margin:15px 0; font-size:1.1em; line-height:1.6;">
-                        Спасибо за регистрацию в Турклубе Ирбис! Пожалуйста, подтвердите вашу почту, нажав на кнопку ниже:
-                    </p>
+                <td style="background-color:#174785; padding:40px 30px; color:#ffffff;">
 
-                    <!-- Кнопка -->
-                    <a href="{{ verify_link }}" style="display:inline-block; padding:12px 25px; margin:20px 0; background-color:#2d599a; color:#ffffff; font-size:1.2em; font-weight:bold; text-decoration:none; border-radius:5px;">
-                        Подтвердить Email
-                    </a>
-
-                    <p style="margin:15px 0; font-size:1.1em; line-height:1.6;">
-                        Если вы не регистрировались, просто проигнорируйте это письмо.
-                    </p>
-
-                    <!-- Футер -->
+                    <!-- Приветственный текст -->
                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
                         <tr>
-                            <td align="center" style="border-top:1px solid rgba(255,255,255,0.3); padding-top:20px; font-size:0.9em;">
-                                Турклуб Ирбис &copy; 2025
+                            <td style="padding-bottom:25px;">
+                                <p style="margin:0; font-size:18px; line-height:1.6; color:#ffffff; text-align:center;">
+                                    Спасибо за регистрацию в <strong>Турклубе Ирбис</strong>!
+                                </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding-bottom:30px;">
+                                <p style="margin:0; font-size:16px; line-height:1.6; color:#ffffff; text-align:center;">
+                                    Пожалуйста, подтвердите ваш адрес электронной почты, нажав на кнопку ниже:
+                                </p>
                             </td>
                         </tr>
                     </table>
 
+                    <!-- Кнопка подтверждения -->
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <td align="center" style="padding:10px 0 30px 0;">
+                                <!--[if mso]>
+                                <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ verify_link }}" style="height:50px;v-text-anchor:middle;width:250px;" arcsize="10%" strokecolor="#2d599a" fillcolor="#2d599a">
+                                <w:anchorlock/>
+                                <center style="color:#ffffff;font-family:Arial,sans-serif;font-size:18px;font-weight:bold;">Подтвердить Email</center>
+                                </v:roundrect>
+                                <![endif]-->
+                                <a href="{{ verify_link }}" target="_blank" style="display:inline-block; padding:15px 40px; background-color:#2d599a; color:#ffffff; font-size:18px; font-weight:bold; text-decoration:none; border-radius:5px; mso-hide:all; border:2px solid #2d599a;">
+                                    Подтвердить Email
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Дополнительная информация -->
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <td style="padding-bottom:20px;">
+                                <p style="margin:0; font-size:14px; line-height:1.6; color:#ffffff; text-align:center;">
+                                    Или скопируйте и вставьте эту ссылку в ваш браузер:
+                                </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding-bottom:25px;">
+                                <p style="margin:0; font-size:13px; line-height:1.5; color:#a8c5e8; text-align:center; word-break:break-all;">
+                                    {{ verify_link }}
+                                </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding-top:20px; border-top:1px solid rgba(255,255,255,0.3);">
+                                <p style="margin:0; font-size:14px; line-height:1.6; color:#ffffff; text-align:center;">
+                                    Если вы не регистрировались на нашем сайте, просто проигнорируйте это письмо.
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+
+                </td>
+            </tr>
+
+            <!-- Футер -->
+            <tr>
+                <td style="background-color:#0d2f4f; padding:25px 30px; text-align:center;">
+                    <p style="margin:0 0 10px 0; font-size:14px; color:#a8c5e8; line-height:1.5;">
+                        <strong>Турклуб Ирбис</strong>
+                    </p>
+                    <p style="margin:0; font-size:12px; color:#7a9fc4; line-height:1.5;">
+                        &copy; 2025 Все права защищены
+                    </p>
                 </td>
             </tr>
 
