@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
 
 from core.utils import role_required
+from crud.users import get_user_by_id
 from db import get_async_session
 from schemas import (
     ApplicationCreate,
@@ -19,6 +20,7 @@ from crud.application import (
     update_application_status,
     get_application,
 )
+from services.email import send_applicant_email
 
 router = APIRouter(prefix="/api", tags=["School Applications"])
 
@@ -102,6 +104,10 @@ async def admin_update(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Application not found"
         )
+    user_data = await get_user_by_id(session, app_obj.user_id)
+    await send_applicant_email(
+        user.email, f"{user_data.first_name} {user_data.last_name}"
+    )
 
     return CreateResponse(
         status="success",

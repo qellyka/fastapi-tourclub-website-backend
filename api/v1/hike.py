@@ -22,7 +22,6 @@ from crud.hikes import (
     get_hike_by_slug,
     update_hike,
 )
-from crud.users import get_user_by_id
 from db import get_async_session
 from models import UserModel
 from schemas import HikeBase, CreateResponse, HikeRead, HikesRead, HikeUpdate

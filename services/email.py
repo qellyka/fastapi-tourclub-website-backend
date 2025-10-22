@@ -36,3 +36,17 @@ async def send_verification_email(email: str, verify_link: str):
     )
     fm = FastMail(conf)
     await fm.send_message(message, template_name="verify_email_updated.html")
+
+
+async def send_applicant_email(email: str, user_name: str):
+    message = MessageSchema(
+        subject="Ваша заявка рассмотрена",
+        recipients=[email],
+        template_body={
+            "user_name": user_name,
+            "profile_link": f"{settings.FRONTEND_URL}/user/profile/me",
+        },
+        subtype="html",
+    )
+    fm = FastMail(conf)
+    await fm.send_message(message, template_name="application_email.html")
