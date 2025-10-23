@@ -69,9 +69,11 @@ async def get_application(
 async def list_applications(
     session: AsyncSession, status: Optional[str] = None, page: int = 1, limit: int = 20
 ) -> List[ApplicationModel]:
-    query = select(ApplicationModel)
+    query = select(ApplicationModel).options(selectinload(ApplicationModel.user))
     if status:
-        query = query.where(ApplicationModel.status == status)
+        query = query.where(ApplicationModel.status == status).options(
+            selectinload(ApplicationModel.user)
+        )
     query = query.offset((page - 1) * limit).limit(limit)
     result = await session.execute(query)
     return result.scalars().all()
