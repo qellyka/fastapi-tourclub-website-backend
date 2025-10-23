@@ -106,7 +106,7 @@ async def admin_update(
         )
     user_data = await get_user_by_id(session, app_obj.user_id)
     await send_applicant_email(
-        user.email, f"{user_data.first_name} {user_data.last_name}"
+        user_data.email, f"{user_data.first_name} {user_data.last_name}"
     )
 
     return CreateResponse(
