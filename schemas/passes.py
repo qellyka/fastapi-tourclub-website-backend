@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 
 class PassBase(BaseModel):
@@ -38,3 +38,9 @@ class PassUpdate(BaseModel):
     photos: Optional[List[str]] = None
     height: Optional[int] = None
     status: Optional[str] = None
+
+    @field_validator("status")
+    def normalize_status(cls, v):
+        if v:
+            return v.upper()
+        return v
