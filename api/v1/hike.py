@@ -81,43 +81,48 @@ async def create_new_hike_report(
     user: UserModel = Depends(role_required(["moderator", "admin"])),
     session: AsyncSession = Depends(get_async_session),
 ):
-    if not gpx_file.filename.lower().endswith(".gpx"):
-        raise HTTPException(status_code=400, detail="Only GPX files are allowed")
-
-    if gpx_file.size > 10 * 1024 * 1024:  # 10MB
-        raise HTTPException(status_code=400, detail="File too large")
-
+    report_s3_filename = f"{uuid.uuid4()}.pdf"
     gpx_s3_filename = f"{uuid.uuid4()}.gpx"
+
     gpx_bytes = await gpx_file.read()
+    report_bytes = await report_file.read()
     geojson_data = gpx_to_geojson(gpx_bytes)
 
-    report_bytes = await report_file.read()
-    report_s3_filename = f"{uuid.uuid4()}.pdf"
+    try:
+        async with session.begin():
+            hike.slug = generate_slug(hike.name)
+            hike.report_s3_key = report_s3_filename
+            hike.route_s3_key = gpx_s3_filename
+            new_hike = await create_new_hike(session, hike, geojson_data, user.id)
 
-    await s3_client.upload_bytes(
-        gpx_bytes,
-        gpx_s3_filename,
-        "application/gpx+xml",
-        settings.S3_HIKE_MEDIA_BUCKET_NAME,
-        "attachment",
-    )
-    await s3_client.upload_bytes(
-        report_bytes,
-        report_s3_filename,
-        "application/pdf",
-        settings.S3_HIKE_MEDIA_BUCKET_NAME,
-        "inline",
-    )
+            await session.commit()
 
-    hike.slug = generate_slug(hike.name)
-    hike.report_s3_key = report_s3_filename
-    hike.route_s3_key = gpx_s3_filename
-    new_hike = await create_new_hike(session, hike, geojson_data, user.id)
-    return CreateResponse(
-        status="success",
-        message="New report of hike was created",
-        detail=HikeRead.model_validate(new_hike),
-    )
+        try:
+            await s3_client.upload_bytes(
+                gpx_bytes,
+                gpx_s3_filename,
+                "application/gpx+xml",
+                settings.S3_HIKE_MEDIA_BUCKET_NAME,
+            )
+            await s3_client.upload_bytes(
+                report_bytes,
+                report_s3_filename,
+                "application/pdf",
+                settings.S3_HIKE_MEDIA_BUCKET_NAME,
+            )
+        except Exception as s3_error:
+            await session.delete(new_hike)
+            await session.commit()
+            raise HTTPException(status_code=500, detail="Failed to upload files")
+
+        return CreateResponse(
+            status="success",
+            message="New report of hike was created",
+            detail=HikeRead.model_validate(new_hike),
+        )
+    except Exception as e:
+        await session.rollback()
+        raise
 
 
 @router.get("/hikes/{hike_id}/file/{file_type}")

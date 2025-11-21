@@ -22,7 +22,8 @@ dependencies = [
     "gpxpy (>=1.6.2,<2.0.0)",
     "python-multipart (>=0.0.20,<0.0.21)",
     "aiobotocore (>=2.24.1,<3.0.0)",
-    "python-slugify (>=8.0.4,<9.0.0)"
+    "python-slugify (>=8.0.4,<9.0.0)",
+    "slowapi (>=0.1.9,<0.2.0)"
 ]
 
 

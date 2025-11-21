@@ -53,12 +53,25 @@ async def create_new_pass(session: AsyncSession, pass_stmt: PassBase, user_id: i
 async def update_pass(
     session: AsyncSession, db_pass: PassModel, data: PassUpdate, user_id: int
 ) -> PassModel:
-    update_data = data.dict(exclude_unset=True)
+    ALLOWED_FIELDS = {
+        "name",
+        "region",
+        "complexity",
+        "longitude",
+        "latitude",
+        "description",
+        "photos",
+        "height",
+        "status",
+    }
+
+    update_data = data.model_dump(exclude_unset=True)
+
     for field, value in update_data.items():
-        setattr(db_pass, field, value)
+        if field in ALLOWED_FIELDS:
+            setattr(db_pass, field, value)
 
     db_pass.updated_by = user_id
-
     await session.commit()
     await session.refresh(db_pass)
     return db_pass

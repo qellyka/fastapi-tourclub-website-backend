@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     MAIL_USERNAME: str
     MAIL_PASSWORD: str
     MAIL_FROM: EmailStr
-    MAIL_FROM_NAME: str
+    MAIL_FROM_NAME: str = "Турклуб «Ирбис»"
     MAIL_PORT: int = 587
     MAIL_SERVER: str
     MAIL_STARTTLS: bool = True
@@ -39,6 +39,8 @@ class Settings(BaseSettings):
     S3_USER_MEDIA_BUCKET_NAME: str
     S3_ARTICLE_MEDIA_BUCKET_NAME: str
     S3_NEWS_MEDIA_BUCKET_NAME: str
+
+    ADMIN_EMAIL: EmailStr
 
     class Config:
         env_file = ".env"

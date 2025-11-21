@@ -1,9 +1,10 @@
-import random
-import string
+import secrets
 from passlib.hash import bcrypt
+
 from models import UserModel
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from core.config import settings
+from services.email import send_email
 
 
 class DatabaseHelper:
@@ -21,17 +22,13 @@ class DatabaseHelper:
 
     async def create_random_user(self):
         async with self.session_factory() as session:
-            username = "user_" + "".join(
-                random.choices(string.ascii_lowercase + string.digits, k=8)
-            )
-            password_raw = "".join(
-                random.choices(string.ascii_letters + string.digits, k=12)
-            )
+            username = f"admin_{secrets.token_hex(4)}"
+            password_raw = secrets.token_urlsafe(16)
             hashed_password = bcrypt.hash(password_raw)
 
             user = UserModel(
                 username=username,
-                email=f"admin@example.com",
+                email="admin@example.com",
                 password=hashed_password,
                 first_name="admin",
                 last_name="admin",
@@ -39,13 +36,14 @@ class DatabaseHelper:
                 is_activated=True,
                 roles=["guest", "admin"],
             )
-
             session.add(user)
             await session.commit()
-            print("=======================ADMIN=======================")
-            print(f"############## USERNAME: {username} ############")
-            print(f"############## PASSWORD: {password_raw}  ############")
-            print("===================================================")
+
+            await send_email(
+                subject="Admin credentials created",
+                recipients=[f"{settings.ADMIN_EMAIL}"],
+                body=f"Username: {username}\nPassword: {password_raw}",
+            )
 
 
 db_helper = DatabaseHelper(

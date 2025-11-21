@@ -1,6 +1,11 @@
+import asyncio
+
 from fastapi import APIRouter, Depends, HTTPException, Response, Cookie
 from fastapi.responses import RedirectResponse
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.requests import Request
 from starlette.status import (
     HTTP_201_CREATED,
     HTTP_409_CONFLICT,
@@ -28,6 +33,7 @@ from schemas import RegisterUser, UserRead, LoginUser, CreateResponse
 from services.email import send_verification_email
 
 router = APIRouter(prefix="/api/auth", tags=["Auth"])
+limiter = Limiter(key_func=get_remote_address)
 
 
 @router.post("/register", status_code=HTTP_201_CREATED, response_model=CreateResponse)
@@ -61,17 +67,16 @@ async def user_registration(
 
 
 @router.post("/login", status_code=HTTP_200_OK, response_model=CreateResponse)
+@limiter.limit("5/minute")
 async def user_login(
     user: LoginUser,
+    request: Request,
     response: Response,
     session: AsyncSession = Depends(get_async_session),
 ):
     candidate = await get_user_by_email_or_username(session, user.username, None)
-    if not candidate:
-        raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
-        )
-    if not verify_password(user.password, candidate.password):
+    if not candidate or not verify_password(user.password, candidate.password):
+        await asyncio.sleep(1)
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
         )
@@ -129,18 +134,21 @@ async def token_refresh(
     session: AsyncSession = Depends(get_async_session),
 ):
     if not refresh_token:
+        print("refresh token not found")
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED, detail="user unauthorized"
         )
     payload = decode_token(refresh_token)
 
     if payload.get("type") != "refresh":
+        print("refresh token type not supported")
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED, detail="Invalid token type"
         )
 
     token_data = await find_token(refresh_token, session)
     if not token_data:
+        print("refresh token data not found")
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED, detail="user unauthorized"
         )
